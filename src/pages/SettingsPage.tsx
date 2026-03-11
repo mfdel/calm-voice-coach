@@ -19,12 +19,6 @@ export default function SettingsPage() {
       ],
     },
     {
-      title: "Privacy & Security",
-      items: [
-        { icon: Lock, label: "Data & Privacy", desc: "On-device processing, encryption" },
-      ],
-    },
-    {
       title: "Preferences",
       items: [
         { icon: Volume2, label: "Haptic Feedback", desc: "Breathing pulse intensity" },
@@ -43,7 +37,6 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background safe-top pb-28">
       <div className="mx-auto max-w-md px-6 pt-8">
         <h1 className="text-2xl font-extrabold tracking-tight">Settings</h1>
-        <p className="mt-1 font-body text-sm text-muted-foreground">Your trust fortress</p>
 
         <div className="mt-8 space-y-8">
           {settingsGroups.map((group) => (
@@ -77,7 +70,6 @@ export default function SettingsPage() {
 
         <div className="mt-8 text-center">
           <p className="font-body text-xs text-muted-foreground">ParentPilot v1.0</p>
-          <p className="font-body text-[10px] text-muted-foreground/60 mt-1">All audio processed on-device. No raw data leaves your phone.</p>
         </div>
       </div>
     </div>
