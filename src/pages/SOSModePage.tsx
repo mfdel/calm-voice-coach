@@ -1,11 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronRight, Send, Loader2 } from "lucide-react";
+import { X, ChevronRight, Send, Loader2, PenLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useChildProfiles, useRedLines, useParentingPreferences } from "@/hooks/useProfile";
 import { PROBLEM_CATEGORIES } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Step = "pick_problem" | "add_note" | "loading" | "result";
 
@@ -17,9 +18,24 @@ interface SOSResponse {
   latency_ms: number;
 }
 
+interface CuratedCategory {
+  code: string;
+  label: string;
+  emoji: string;
+}
+
+// Default categories for new users
+const DEFAULT_CATEGORIES: CuratedCategory[] = [
+  { code: "bedtime_resistance", label: "Bedtime resistance", emoji: "🌙" },
+  { code: "meal_refusal", label: "Won't eat / food refusal", emoji: "🍽️" },
+  { code: "transition_meltdown", label: "Transition meltdown", emoji: "🔄" },
+  { code: "hitting_aggression", label: "Hitting / aggression", emoji: "✋" },
+];
+
 export default function SOSModePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: children } = useChildProfiles();
   const { data: redLines } = useRedLines();
   const { data: prefs } = useParentingPreferences();
@@ -28,19 +44,56 @@ export default function SOSModePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const [freeText, setFreeText] = useState("");
+  const [showFreeText, setShowFreeText] = useState(false);
   const [response, setResponse] = useState<SOSResponse | null>(null);
   const [responseStep, setResponseStep] = useState(0);
+  const [curatedCategories, setCuratedCategories] = useState<CuratedCategory[]>(DEFAULT_CATEGORIES);
+
+  // Resolve which child is active
+  const activeChildId = selectedChild || children?.[0]?.id;
+
+  // Fetch curated categories for the active child
+  useEffect(() => {
+    if (!user || !activeChildId) return;
+
+    const fetchCurated = async () => {
+      const { data } = await supabase
+        .from("curated_categories")
+        .select("categories")
+        .eq("user_id", user.id)
+        .eq("child_id", activeChildId)
+        .maybeSingle();
+
+      if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+        setCuratedCategories(data.categories as CuratedCategory[]);
+      } else {
+        setCuratedCategories(DEFAULT_CATEGORIES);
+      }
+    };
+
+    fetchCurated();
+  }, [user, activeChildId]);
 
   const handleSelectProblem = (code: string) => {
     setSelectedCategory(code);
     setStep("add_note");
   };
 
+  const handleFreeTextSubmit = () => {
+    if (!freeText.trim()) return;
+    // Use the free text as note_text and pick closest category or use a generic one
+    setSelectedCategory("other");
+    setNoteText(freeText.trim());
+    setStep("add_note");
+  };
+
   const handleSend = useCallback(async () => {
-    if (!selectedCategory) return;
+    const category = selectedCategory === "other" ? "other" : selectedCategory;
+    if (!category) return;
     setStep("loading");
 
-    const child = children?.find((c: any) => c.id === selectedChild) || children?.[0];
+    const child = children?.find((c: any) => c.id === activeChildId) || children?.[0];
     const childSnapshot = child ? {
       age_group: child.age_group,
       known_triggers: child.known_triggers || [],
@@ -56,7 +109,7 @@ export default function SOSModePage() {
     try {
       const { data, error } = await supabase.functions.invoke("sos-respond", {
         body: {
-          problem_category: selectedCategory,
+          problem_category: category,
           note_text: noteText || null,
           child_id: child?.id || null,
           child_snapshot: childSnapshot,
@@ -74,11 +127,11 @@ export default function SOSModePage() {
       toast({ title: "Something went wrong", description: e.message, variant: "destructive" });
       setStep("add_note");
     }
-  }, [selectedCategory, noteText, children, selectedChild, redLines, prefs, toast]);
+  }, [selectedCategory, noteText, children, activeChildId, redLines, prefs, toast]);
 
   const handleExit = () => navigate("/");
 
-  // Problem picker
+  // Problem picker — 4 curated options + free text
   if (step === "pick_problem") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-sos-bg safe-top safe-bottom overflow-auto">
@@ -104,7 +157,7 @@ export default function SOSModePage() {
                 key={c.id}
                 onClick={() => setSelectedChild(c.id)}
                 className={`shrink-0 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors ${
-                  selectedChild === c.id ? "bg-sos-accent text-sos-fg" : "bg-sos-muted text-sos-fg/60"
+                  activeChildId === c.id ? "bg-sos-accent text-sos-fg" : "bg-sos-muted text-sos-fg/60"
                 }`}
               >
                 {c.display_name}
@@ -113,8 +166,8 @@ export default function SOSModePage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 px-6 pb-32">
-          {PROBLEM_CATEGORIES.map((cat) => (
+        <div className="grid grid-cols-2 gap-3 px-6">
+          {curatedCategories.slice(0, 4).map((cat) => (
             <button
               key={cat.code}
               onClick={() => handleSelectProblem(cat.code)}
@@ -125,17 +178,51 @@ export default function SOSModePage() {
             </button>
           ))}
         </div>
+
+        {/* Free text: "Something else" */}
+        <div className="px-6 pt-4 pb-32">
+          {!showFreeText ? (
+            <button
+              onClick={() => setShowFreeText(true)}
+              className="flex w-full items-center gap-3 rounded-2xl bg-sos-muted p-4 text-left active:scale-[0.97] transition-transform"
+            >
+              <PenLine className="h-5 w-5 text-sos-fg/50" />
+              <span className="font-display text-sm font-bold text-sos-fg">Something else…</span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <textarea
+                value={freeText}
+                onChange={(e) => setFreeText(e.target.value)}
+                placeholder="Describe what's happening…"
+                maxLength={500}
+                rows={3}
+                autoFocus
+                className="w-full rounded-2xl bg-sos-muted p-4 font-body text-sm text-sos-fg placeholder:text-sos-fg/30 outline-none resize-none"
+              />
+              <button
+                onClick={handleFreeTextSubmit}
+                disabled={!freeText.trim()}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-sos-accent font-display text-sm font-bold text-sos-fg disabled:opacity-40 active:scale-95 transition-transform"
+              >
+                <Send className="h-4 w-4" />
+                Get help
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   // Note input
   if (step === "add_note") {
-    const catLabel = PROBLEM_CATEGORIES.find((c) => c.code === selectedCategory)?.label || "";
+    const catObj = PROBLEM_CATEGORIES.find((c) => c.code === selectedCategory);
+    const catLabel = catObj?.label || (selectedCategory === "other" ? "Other situation" : selectedCategory);
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-sos-bg safe-top safe-bottom">
         <div className="flex items-center justify-between px-6 pt-4">
-          <button onClick={() => setStep("pick_problem")} className="font-body text-sm text-sos-fg/60">← Back</button>
+          <button onClick={() => { setStep("pick_problem"); setShowFreeText(false); }} className="font-body text-sm text-sos-fg/60">← Back</button>
           <button onClick={handleExit} className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
             <X className="h-5 w-5" />
           </button>
