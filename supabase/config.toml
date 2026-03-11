@@ -2,3 +2,6 @@ project_id = "gymzdcweqkqbibeihdsn"
 
 [functions.sos-respond]
 verify_jwt = false
+
+[functions.curate-categories]
+verify_jwt = false
