@@ -135,62 +135,108 @@ export default function SOSModePage() {
   if (step === "pick_problem") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-sos-bg safe-top safe-bottom overflow-auto">
-        <div className="flex items-center justify-between px-6 pt-4">
-          <div className="flex items-center gap-2">
+        {/* Ambient background blobs */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="sos-ambient-blob absolute -top-32 -left-32 h-80 w-80 rounded-full bg-sos-accent/10 blur-3xl" />
+          <div className="sos-ambient-blob absolute -bottom-40 -right-20 h-96 w-96 rounded-full bg-[hsl(var(--sos-warm)/0.08)] blur-3xl" style={{ animationDelay: "3s" }} />
+        </div>
+
+        {/* Header */}
+        <div className="relative flex items-center justify-between px-6 pt-4">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-2"
+          >
             <div className="h-2 w-2 rounded-full bg-sos-accent sos-glow" />
-            <span className="font-body text-xs font-medium text-sos-fg/60">SOS MODE</span>
-          </div>
-          <button onClick={handleExit} className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
+            <span className="font-body text-xs font-semibold uppercase tracking-widest text-sos-fg/50">SOS Mode</span>
+          </motion.div>
+          <button onClick={handleExit} className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-fg/5 backdrop-blur-sm text-sos-fg/60 hover:text-sos-fg/80 transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="px-6 pt-6 pb-2">
-          <h2 className="font-display text-2xl font-extrabold text-sos-fg">What's happening?</h2>
-          <p className="mt-1 font-body text-sm text-sos-fg/50">Pick the closest match</p>
-        </div>
+        {/* Title section */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="relative px-6 pt-8 pb-2"
+        >
+          <h2 className="font-display text-3xl font-extrabold tracking-tight text-sos-fg">
+            What's happening?
+          </h2>
+          <p className="mt-2 font-body text-sm text-sos-fg/40">Tap the closest match</p>
+        </motion.div>
 
+        {/* Child selector — right-aligned */}
         {children && children.length > 1 && (
-          <div className="flex gap-2 px-6 pb-4 justify-end overflow-x-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex gap-2 px-6 pb-5 justify-end overflow-x-auto"
+          >
             {children.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedChild(c.id)}
-                className={`shrink-0 rounded-full px-5 py-2.5 font-body text-base font-semibold transition-colors ${
-                  activeChildId === c.id ? "bg-sos-accent text-sos-fg" : "bg-sos-muted text-sos-fg/60"
+                className={`shrink-0 rounded-full px-5 py-2.5 font-body text-base font-semibold transition-all duration-200 ${
+                  activeChildId === c.id
+                    ? "bg-sos-accent text-sos-fg shadow-lg shadow-sos-accent/20"
+                    : "bg-sos-fg/5 text-sos-fg/50 backdrop-blur-sm"
                 }`}
               >
                 {c.display_name}
               </button>
             ))}
-          </div>
+          </motion.div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 px-6">
-          {curatedCategories.slice(0, 4).map((cat) => (
-            <button
+        {/* Category cards — 2×2 grid with staggered reveal */}
+        <div className="relative grid grid-cols-2 gap-3 px-6">
+          {curatedCategories.slice(0, 4).map((cat, i) => (
+            <motion.button
               key={cat.code}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.15 + i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={() => handleSelectProblem(cat.code)}
-              className="flex flex-col items-start gap-1 rounded-2xl bg-sos-muted p-4 text-left active:scale-[0.97] transition-transform"
+              className="sos-card-hover group flex flex-col items-start gap-3 rounded-3xl p-5 text-left active:scale-[0.96] transition-transform"
             >
-              <span className="text-2xl">{cat.emoji}</span>
-              <span className="font-display text-sm font-bold text-sos-fg">{cat.label}</span>
-            </button>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sos-fg/5 text-2xl group-active:bg-sos-accent/20 transition-colors">
+                {cat.emoji}
+              </span>
+              <span className="font-display text-[15px] font-bold leading-snug text-sos-fg">{cat.label}</span>
+            </motion.button>
           ))}
         </div>
 
         {/* Free text: "Something else" */}
-        <div className="px-6 pt-4 pb-32">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="px-6 pt-5 pb-32"
+        >
           {!showFreeText ? (
             <button
               onClick={() => setShowFreeText(true)}
-              className="flex w-full items-center gap-3 rounded-2xl bg-sos-muted p-4 text-left active:scale-[0.97] transition-transform"
+              className="sos-card-hover group flex w-full items-center gap-4 rounded-3xl p-5 text-left active:scale-[0.97] transition-transform"
             >
-              <PenLine className="h-5 w-5 text-sos-fg/50" />
-              <span className="font-display text-sm font-bold text-sos-fg">Something else…</span>
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sos-fg/5 group-active:bg-sos-accent/20 transition-colors">
+                <PenLine className="h-5 w-5 text-sos-fg/40" />
+              </span>
+              <span className="font-display text-[15px] font-bold text-sos-fg/70">Something else…</span>
             </button>
           ) : (
-            <div className="space-y-3">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              transition={{ duration: 0.3 }}
+              className="space-y-3"
+            >
               <textarea
                 value={freeText}
                 onChange={(e) => setFreeText(e.target.value)}
@@ -198,19 +244,19 @@ export default function SOSModePage() {
                 maxLength={500}
                 rows={3}
                 autoFocus
-                className="w-full rounded-2xl bg-sos-muted p-4 font-body text-sm text-sos-fg placeholder:text-sos-fg/30 outline-none resize-none"
+                className="w-full rounded-2xl bg-sos-fg/5 border border-sos-fg/8 p-4 font-body text-sm text-sos-fg placeholder:text-sos-fg/25 outline-none resize-none focus:border-sos-accent/30 transition-colors"
               />
               <button
                 onClick={handleFreeTextSubmit}
                 disabled={!freeText.trim()}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-sos-accent font-display text-sm font-bold text-sos-fg disabled:opacity-40 active:scale-95 transition-transform"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-sos-accent font-display text-sm font-bold text-sos-fg disabled:opacity-30 active:scale-95 transition-transform shadow-lg shadow-sos-accent/20"
               >
                 <Send className="h-4 w-4" />
                 Get help
               </button>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
     );
   }
