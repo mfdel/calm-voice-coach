@@ -53,6 +53,41 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_categories: {
+        Row: {
+          categories: Json
+          child_id: string | null
+          computed_at: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          categories?: Json
+          child_id?: string | null
+          computed_at?: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          categories?: Json
+          child_id?: string | null
+          computed_at?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_categories_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_feedback: {
         Row: {
           created_at: string
