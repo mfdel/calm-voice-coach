@@ -10,10 +10,8 @@ export default function DebriefPage() {
   const submitFeedback = useSubmitFeedback();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback?.length > 0).length || 0;
-  const alignedCount = incidents?.filter((i: any) =>
-    i.incident_feedback?.some((f: any) => f.outcome === "helpful")
-  ).length || 0;
+  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback != null).length || 0;
+  const alignedCount = incidents?.filter((i: any) => i.incident_feedback?.outcome === "helpful").length || 0;
 
   return (
     <div className="min-h-screen bg-background safe-top pb-28">
