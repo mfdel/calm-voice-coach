@@ -151,27 +151,54 @@ Rules:
 - Each suggestion must include one exact script the parent can say.
 ```
 
-## 9. Anthropic-style prompt skeleton
+## 9. Provider-neutral prompt contract
 
 ```json
 {
-  "model": "claude-fast-tier",
-  "max_tokens": 450,
-  "temperature": 0.4,
-  "system": "You are ParentPilot, a calm parenting SOS assistant...",
-  "messages": [
+  "model_profile": "fast_safe_json",
+  "generation_config": {
+    "max_output_tokens": 450,
+    "temperature": 0.4
+  },
+  "system_instruction": "You are ParentPilot, a calm parenting SOS assistant...",
+  "prompt_sections": [
     {
-      "role": "user",
-      "content": [
-        {
-          "type": "text",
-          "text": "PARENTING STYLE\n- style: gentle\n- values: connection, clear boundaries\n- red lines: cry_it_out, physical_punishment, shame_language\n\nCHILD PROFILE\n- age group: toddler\n- triggers: transitions, fatigue\n- calming preferences: choices, quiet_voice\n\nCURRENT SOS\n- problem category: bedtime_resistance\n- note: Skipped nap and screaming about pajamas.\n- extracted signals: fatigue, transition\n\nRETRIEVED GUIDANCE\n1. Offer one bounded choice...\n2. Reduce language and lower stimulation...\n\nRECENT INCIDENT LEARNINGS\n- Yesterday: giving one small choice helped quickly.\n- Last week: too much talking made the situation worse.\n\nRETURN JSON WITH THIS SHAPE\n{\n  \"summary\": \"...\",\n  \"suggestions\": [\n    {\n      \"title\": \"...\",\n      \"reason\": \"...\",\n      \"script\": \"...\"\n    }\n  ],\n  \"safety_note\": null\n}"
-        }
-      ]
+      "label": "PARENTING STYLE",
+      "text": "- style: gentle\n- values: connection, clear boundaries\n- red lines: cry_it_out, physical_punishment, shame_language"
+    },
+    {
+      "label": "CHILD PROFILE",
+      "text": "- age group: toddler\n- triggers: transitions, fatigue\n- calming preferences: choices, quiet_voice"
+    },
+    {
+      "label": "CURRENT SOS",
+      "text": "- problem category: bedtime_resistance\n- note: Skipped nap and screaming about pajamas.\n- extracted signals: fatigue, transition"
+    },
+    {
+      "label": "RETRIEVED GUIDANCE",
+      "text": "1. Offer one bounded choice...\n2. Reduce language and lower stimulation..."
+    },
+    {
+      "label": "RECENT INCIDENT LEARNINGS",
+      "text": "- Yesterday: giving one small choice helped quickly.\n- Last week: too much talking made the situation worse."
+    },
+    {
+      "label": "RESPONSE SCHEMA",
+      "text": "Return JSON with keys: summary, suggestions, safety_note"
     }
-  ]
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "schema_name": "parentpilot_sos_response"
+  }
 }
 ```
+
+This is the **internal prompt contract**, not a vendor-specific HTTP payload. The LLM adapter should translate it into the request shape required by the selected provider while preserving:
+- system instruction intent
+- prompt section order
+- generation settings
+- structured JSON output requirements
 
 ## Output contract
 

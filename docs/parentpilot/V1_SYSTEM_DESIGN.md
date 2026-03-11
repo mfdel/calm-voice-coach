@@ -78,18 +78,18 @@ This version is intentionally narrow:
 │ 2. normalize input                                                │
 │ 3. retrieve KB snippets + similar incidents                       │
 │ 4. assemble prompt                                                │
-│ 5. call Anthropic-compatible LLM                                  │
+│ 5. call selected LLM through provider adapter                     │
 │ 6. validate output + red-lines check                              │
 │ 7. persist incident + response metadata                           │
 └───────────────┬────────────────────┬───────────────────────────────┘
                 │                    │
                 ▼                    ▼
-      PostgreSQL + pgvector      LLM Provider
-      - KB articles              - Anthropic-compatible API
-      - KB snippets              - JSON response contract
-      - incident history         - retry on invalid output
-      - feedback                 
-      - prompt run metadata      
+        PostgreSQL + pgvector      LLM Provider
+        - KB articles              - Provider-specific API
+        - KB snippets              - JSON response contract
+        - incident history         - retry on invalid output
+        - feedback                 
+        - prompt run metadata      
 ```
 
 ## Main request flow
@@ -201,11 +201,12 @@ Responsibilities:
 - assemble context in token-efficient order
 - summarize prior incidents
 - embed red lines as hard constraints
-- produce provider-specific request payload
+- produce a provider-neutral prompt contract
 
 ### LLM adapter
 Responsibilities:
-- provider abstraction for Anthropic-compatible APIs
+- provider abstraction for multiple LLM APIs
+- translate the internal prompt contract into the selected provider's request format
 - retries, timeouts, logging
 - future-proofing for model swaps
 
