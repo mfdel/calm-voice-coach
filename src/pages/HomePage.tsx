@@ -10,10 +10,8 @@ export default function HomePage() {
   const { data: incidents } = useTodayIncidents();
 
   const sessionCount = incidents?.length || 0;
-  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback?.length > 0).length || 0;
-  const alignedCount = incidents?.filter((i: any) =>
-    i.incident_feedback?.some((f: any) => f.outcome === "helpful")
-  ).length || 0;
+  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback != null).length || 0;
+  const alignedCount = incidents?.filter((i: any) => i.incident_feedback?.outcome === "helpful").length || 0;
   const alignmentScore = feedbackCount > 0 ? Math.round((alignedCount / feedbackCount) * 100) : null;
 
   return (
