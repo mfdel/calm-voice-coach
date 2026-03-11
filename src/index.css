@@ -37,10 +37,12 @@
     --radius: 1rem;
 
     /* SOS Mode tokens */
-    --sos-bg: 240 6% 12%;
+    --sos-bg: 240 6% 8%;
     --sos-fg: 0 0% 100%;
-    --sos-accent: 222 100% 50%;
-    --sos-muted: 240 4% 26%;
+    --sos-accent: 222 100% 56%;
+    --sos-muted: 240 5% 18%;
+    --sos-card-glow: 222 100% 50%;
+    --sos-warm: 30 80% 55%;
 
     /* Custom */
     --tab-bar-bg: 40 20% 96%;
