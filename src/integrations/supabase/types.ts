@@ -179,6 +179,89 @@ export type Database = {
           },
         ]
       }
+      knowledge_articles: {
+        Row: {
+          age_groups: Json
+          description: string | null
+          editorial_status: string
+          id: string
+          problem_category: string
+          source_notes: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          age_groups?: Json
+          description?: string | null
+          editorial_status?: string
+          id?: string
+          problem_category: string
+          source_notes?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          age_groups?: Json
+          description?: string | null
+          editorial_status?: string
+          id?: string
+          problem_category?: string
+          source_notes?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      knowledge_snippets: {
+        Row: {
+          applicable_triggers: Json | null
+          article_id: string
+          blocked_by_red_lines: Json | null
+          content: string
+          embedding: string | null
+          id: string
+          snippet_type: string
+          success_signals: Json | null
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          applicable_triggers?: Json | null
+          article_id: string
+          blocked_by_red_lines?: Json | null
+          content: string
+          embedding?: string | null
+          id?: string
+          snippet_type?: string
+          success_signals?: Json | null
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          applicable_triggers?: Json | null
+          article_id?: string
+          blocked_by_red_lines?: Json | null
+          content?: string
+          embedding?: string | null
+          id?: string
+          snippet_type?: string
+          success_signals?: Json | null
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_snippets_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parenting_preferences: {
         Row: {
           household_notes: string | null
@@ -236,6 +319,53 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_runs: {
+        Row: {
+          created_at: string
+          id: string
+          incident_id: string
+          input_token_estimate: number | null
+          model_name: string | null
+          output_token_count: number | null
+          prompt_version: string | null
+          red_line_violation_detected: boolean | null
+          response_valid: boolean | null
+          retry_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incident_id: string
+          input_token_estimate?: number | null
+          model_name?: string | null
+          output_token_count?: number | null
+          prompt_version?: string | null
+          red_line_violation_detected?: boolean | null
+          response_valid?: boolean | null
+          retry_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incident_id?: string
+          input_token_estimate?: number | null
+          model_name?: string | null
+          output_token_count?: number | null
+          prompt_version?: string | null
+          red_line_violation_detected?: boolean | null
+          response_valid?: boolean | null
+          retry_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_runs_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       red_lines: {
         Row: {
           code: string
@@ -265,6 +395,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      retrieval_events: {
+        Row: {
+          created_at: string
+          id: string
+          incident_id: string
+          query_filters: Json | null
+          query_text: string | null
+          retrieval_ms: number | null
+          top_results: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incident_id: string
+          query_filters?: Json | null
+          query_text?: string | null
+          retrieval_ms?: number | null
+          top_results?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incident_id?: string
+          query_filters?: Json | null
+          query_text?: string | null
+          retrieval_ms?: number | null
+          top_results?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retrieval_events_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
