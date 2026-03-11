@@ -151,12 +151,12 @@ export default function SOSModePage() {
         </div>
 
         {children && children.length > 1 && (
-          <div className="flex gap-2 px-6 pb-4 overflow-x-auto">
+          <div className="flex gap-2 px-6 pb-4 justify-end overflow-x-auto">
             {children.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedChild(c.id)}
-                className={`shrink-0 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-5 py-2.5 font-body text-base font-semibold transition-colors ${
                   activeChildId === c.id ? "bg-sos-accent text-sos-fg" : "bg-sos-muted text-sos-fg/60"
                 }`}
               >

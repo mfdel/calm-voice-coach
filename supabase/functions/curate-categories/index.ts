@@ -54,10 +54,20 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Get all users with child profiles
-    const { data: children } = await supabase
+    // Support single-child mode (triggered after SOS) or batch mode
+    const body = await req.json().catch(() => ({}));
+    const targetUserId = body.user_id;
+    const targetChildId = body.child_id;
+
+    let query = supabase
       .from("child_profiles")
       .select("id, user_id, known_triggers, age_group");
+
+    if (targetUserId && targetChildId) {
+      query = query.eq("user_id", targetUserId).eq("id", targetChildId);
+    }
+
+    const { data: children } = await query;
 
     if (!children || children.length === 0) {
       return new Response(JSON.stringify({ message: "No children to process" }), {

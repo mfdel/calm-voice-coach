@@ -378,6 +378,19 @@ Return ONLY valid JSON with this exact schema:
       });
     }
 
+    // Fire-and-forget: trigger category curation for this child after each SOS session
+    if (child_id) {
+      const curateUrl = `${supabaseUrl}/functions/v1/curate-categories`;
+      fetch(curateUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({ user_id: user.id, child_id }),
+      }).catch((err) => console.error("Curate trigger error:", err));
+    }
+
     return new Response(JSON.stringify({
       incident_id: incident?.id,
       summary: parsed.summary,
