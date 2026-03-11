@@ -66,7 +66,7 @@ export default function SOSModePage() {
         .maybeSingle();
 
       if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
-        setCuratedCategories(data.categories as CuratedCategory[]);
+        setCuratedCategories(data.categories as unknown as CuratedCategory[]);
       } else {
         setCuratedCategories(DEFAULT_CATEGORIES);
       }
