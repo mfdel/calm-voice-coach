@@ -114,12 +114,46 @@
   }
 }
 
+@keyframes sos-ambient {
+  0%, 100% {
+    opacity: 0.08;
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    opacity: 0.15;
+    transform: scale(1.1) translate(2%, -3%);
+  }
+  66% {
+    opacity: 0.1;
+    transform: scale(0.95) translate(-2%, 2%);
+  }
+}
+
 .sos-pulse-ring {
   animation: sos-pulse 4s ease-in-out infinite;
 }
 
 .sos-glow {
   animation: sos-glow 4s ease-in-out infinite;
+}
+
+.sos-ambient-blob {
+  animation: sos-ambient 8s ease-in-out infinite;
+}
+
+.sos-card-hover {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--sos-muted)) 0%,
+    hsl(var(--sos-muted) / 0.8) 100%
+  );
+  border: 1px solid hsl(var(--sos-fg) / 0.06);
+  transition: all 0.2s ease;
+}
+
+.sos-card-hover:active {
+  border-color: hsl(var(--sos-accent) / 0.4);
+  box-shadow: 0 0 20px -4px hsl(var(--sos-accent) / 0.2);
 }
 
 /* Safe area for mobile */
