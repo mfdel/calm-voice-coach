@@ -1,51 +1,19 @@
-import { useState } from "react";
-import { Moon, ThumbsUp, ThumbsDown, ChevronDown } from "lucide-react";
+import { Moon, ThumbsUp, ThumbsDown, ChevronDown, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Incident {
-  id: number;
-  time: string;
-  trigger: string;
-  suggestion: string;
-  accepted: boolean | null;
-}
-
-const MOCK_INCIDENTS: Incident[] = [
-  {
-    id: 1,
-    time: "8:15 AM",
-    trigger: "Morning routine — wrong socks",
-    suggestion: "Sit low, validate feelings, offer two choices",
-    accepted: true,
-  },
-  {
-    id: 2,
-    time: "12:30 PM",
-    trigger: "Lunchtime — refused to eat",
-    suggestion: "Remove pressure, eat together, try again in 20 min",
-    accepted: null,
-  },
-  {
-    id: 3,
-    time: "6:45 PM",
-    trigger: "Bedtime resistance",
-    suggestion: "Acknowledge transition, give 5-min warning, use routine chart",
-    accepted: null,
-  },
-];
+import { useState } from "react";
+import { useTodayIncidents, useSubmitFeedback } from "@/hooks/useIncidents";
+import { PROBLEM_CATEGORIES } from "@/lib/constants";
+import { format } from "date-fns";
 
 export default function DebriefPage() {
-  const [incidents, setIncidents] = useState(MOCK_INCIDENTS);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data: incidents, isLoading } = useTodayIncidents();
+  const submitFeedback = useSubmitFeedback();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const handleFeedback = (id: number, accepted: boolean) => {
-    setIncidents((prev) =>
-      prev.map((inc) => (inc.id === id ? { ...inc, accepted } : inc))
-    );
-  };
-
-  const acceptedCount = incidents.filter((i) => i.accepted === true).length;
-  const reviewedCount = incidents.filter((i) => i.accepted !== null).length;
+  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback?.length > 0).length || 0;
+  const alignedCount = incidents?.filter((i: any) =>
+    i.incident_feedback?.some((f: any) => f.outcome === "helpful")
+  ).length || 0;
 
   return (
     <div className="min-h-screen bg-background safe-top pb-28">
@@ -58,106 +26,112 @@ export default function DebriefPage() {
           </div>
         </div>
 
-        {/* Summary card */}
         <div className="mt-6 rounded-2xl bg-secondary p-5">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-display font-bold">{incidents.length}</p>
+              <p className="text-2xl font-display font-bold">{incidents?.length || 0}</p>
               <p className="text-xs font-body text-muted-foreground">Sessions</p>
             </div>
             <div>
-              <p className="text-2xl font-display font-bold">{reviewedCount}</p>
+              <p className="text-2xl font-display font-bold">{feedbackCount}</p>
               <p className="text-xs font-body text-muted-foreground">Reviewed</p>
             </div>
             <div>
               <p className="text-2xl font-display font-bold">
-                {reviewedCount > 0 ? Math.round((acceptedCount / reviewedCount) * 100) : "—"}
-                {reviewedCount > 0 && <span className="text-sm">%</span>}
+                {feedbackCount > 0 ? `${Math.round((alignedCount / feedbackCount) * 100)}%` : "—"}
               </p>
               <p className="text-xs font-body text-muted-foreground">Aligned</p>
             </div>
           </div>
         </div>
 
-        {/* Incidents */}
-        <div className="mt-6 space-y-3">
-          {incidents.map((inc) => (
-            <div key={inc.id} className="rounded-2xl bg-secondary overflow-hidden">
-              <button
-                onClick={() => setExpandedId(expandedId === inc.id ? null : inc.id)}
-                className="flex w-full items-center justify-between p-4 text-left"
-              >
-                <div>
-                  <p className="font-display text-sm font-bold">{inc.trigger}</p>
-                  <p className="font-body text-xs text-muted-foreground">{inc.time}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {inc.accepted === true && (
-                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-body font-medium text-primary">
-                      ✓ Aligned
-                    </span>
-                  )}
-                  {inc.accepted === false && (
-                    <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-body font-medium text-destructive">
-                      Recalibrate
-                    </span>
-                  )}
-                  <ChevronDown
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${
-                      expandedId === inc.id ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-              </button>
+        {isLoading ? (
+          <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : !incidents?.length ? (
+          <div className="mt-12 text-center">
+            <p className="font-body text-sm text-muted-foreground">No SOS sessions today.</p>
+            <p className="font-body text-xs text-muted-foreground mt-1">Use the SOS button when things get tough.</p>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            {incidents.map((inc: any) => {
+              const catLabel = PROBLEM_CATEGORIES.find((c) => c.code === inc.problem_category)?.label || inc.problem_category;
+              const feedback = inc.incident_feedback?.[0];
+              const suggestions = inc.incident_suggestions || [];
 
-              <AnimatePresence>
-                {expandedId === inc.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="overflow-hidden"
+              return (
+                <div key={inc.id} className="rounded-2xl bg-secondary overflow-hidden">
+                  <button
+                    onClick={() => setExpandedId(expandedId === inc.id ? null : inc.id)}
+                    className="flex w-full items-center justify-between p-4 text-left"
                   >
-                    <div className="border-t border-border px-4 pb-4 pt-3">
-                      <p className="font-body text-sm text-foreground leading-relaxed">
-                        <span className="font-medium">AI suggested: </span>
-                        {inc.suggestion}
-                      </p>
-                      <p className="mt-3 font-body text-xs text-muted-foreground">
-                        Did this feel right?
-                      </p>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          onClick={() => handleFeedback(inc.id, true)}
-                          className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
-                            inc.accepted === true
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-accent text-accent-foreground"
-                          }`}
-                        >
-                          <ThumbsUp className="h-3.5 w-3.5" />
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => handleFeedback(inc.id, false)}
-                          className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
-                            inc.accepted === false
-                              ? "bg-destructive text-destructive-foreground"
-                              : "bg-accent text-accent-foreground"
-                          }`}
-                        >
-                          <ThumbsDown className="h-3.5 w-3.5" />
-                          Recalibrate
-                        </button>
-                      </div>
+                    <div>
+                      <p className="font-display text-sm font-bold">{catLabel}</p>
+                      <p className="font-body text-xs text-muted-foreground">{format(new Date(inc.created_at), "h:mm a")}</p>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
+                    <div className="flex items-center gap-2">
+                      {feedback?.outcome === "helpful" && (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-body font-medium text-primary">✓ Aligned</span>
+                      )}
+                      {feedback?.outcome === "misaligned" && (
+                        <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-body font-medium text-destructive">Recalibrate</span>
+                      )}
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedId === inc.id ? "rotate-180" : ""}`} />
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedId === inc.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                          {inc.summary_text && (
+                            <p className="font-body text-sm text-foreground">{inc.summary_text}</p>
+                          )}
+                          {suggestions.map((s: any) => (
+                            <div key={s.id} className="rounded-xl bg-accent p-3">
+                              <p className="font-display text-sm font-bold">{s.title}</p>
+                              <p className="font-body text-xs text-muted-foreground mt-1">{s.reason}</p>
+                              {s.script && (
+                                <p className="font-body text-sm text-primary mt-2">"{s.script}"</p>
+                              )}
+                            </div>
+                          ))}
+                          <p className="font-body text-xs text-muted-foreground">Did this feel right?</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => submitFeedback.mutate({ incident_id: inc.id, outcome: "helpful" })}
+                              disabled={submitFeedback.isPending}
+                              className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
+                                feedback?.outcome === "helpful" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+                              }`}
+                            >
+                              <ThumbsUp className="h-3.5 w-3.5" /> Yes
+                            </button>
+                            <button
+                              onClick={() => submitFeedback.mutate({ incident_id: inc.id, outcome: "misaligned" })}
+                              disabled={submitFeedback.isPending}
+                              className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
+                                feedback?.outcome === "misaligned" ? "bg-destructive text-destructive-foreground" : "bg-accent text-accent-foreground"
+                              }`}
+                            >
+                              <ThumbsDown className="h-3.5 w-3.5" /> Recalibrate
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
