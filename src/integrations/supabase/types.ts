@@ -14,7 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      child_profiles: {
+        Row: {
+          age_group: string
+          birth_date: string | null
+          calming_preferences: Json | null
+          created_at: string
+          development_notes: string | null
+          display_name: string
+          id: string
+          known_triggers: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_group?: string
+          birth_date?: string | null
+          calming_preferences?: Json | null
+          created_at?: string
+          development_notes?: string | null
+          display_name: string
+          id?: string
+          known_triggers?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_group?: string
+          birth_date?: string | null
+          calming_preferences?: Json | null
+          created_at?: string
+          development_notes?: string | null
+          display_name?: string
+          id?: string
+          known_triggers?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      incident_feedback: {
+        Row: {
+          created_at: string
+          feedback_note: string | null
+          id: string
+          incident_id: string
+          outcome: string
+          reason_tags: Json | null
+        }
+        Insert: {
+          created_at?: string
+          feedback_note?: string | null
+          id?: string
+          incident_id: string
+          outcome: string
+          reason_tags?: Json | null
+        }
+        Update: {
+          created_at?: string
+          feedback_note?: string | null
+          id?: string
+          incident_id?: string
+          outcome?: string
+          reason_tags?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_feedback_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: true
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          incident_id: string
+          position: number
+          reason: string | null
+          script: string | null
+          source_type: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incident_id: string
+          position?: number
+          reason?: string | null
+          script?: string | null
+          source_type?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incident_id?: string
+          position?: number
+          reason?: string | null
+          script?: string | null
+          source_type?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_suggestions_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          child_id: string | null
+          context_signals: Json | null
+          created_at: string
+          id: string
+          input_mode: string | null
+          latency_ms: number | null
+          note_text: string | null
+          problem_category: string
+          summary_text: string | null
+          used_fallback: boolean | null
+          user_id: string
+        }
+        Insert: {
+          child_id?: string | null
+          context_signals?: Json | null
+          created_at?: string
+          id?: string
+          input_mode?: string | null
+          latency_ms?: number | null
+          note_text?: string | null
+          problem_category: string
+          summary_text?: string | null
+          used_fallback?: boolean | null
+          user_id: string
+        }
+        Update: {
+          child_id?: string | null
+          context_signals?: Json | null
+          created_at?: string
+          id?: string
+          input_mode?: string | null
+          latency_ms?: number | null
+          note_text?: string | null
+          problem_category?: string
+          summary_text?: string | null
+          used_fallback?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parenting_preferences: {
+        Row: {
+          household_notes: string | null
+          id: string
+          parenting_values: Json | null
+          style: string | null
+          tone_preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          household_notes?: string | null
+          id?: string
+          parenting_values?: Json | null
+          style?: string | null
+          tone_preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          household_notes?: string | null
+          id?: string
+          parenting_values?: Json | null
+          style?: string | null
+          tone_preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          locale: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          locale?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          locale?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      red_lines: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          label: string
+          notes: string | null
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          notes?: string | null
+          severity?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
