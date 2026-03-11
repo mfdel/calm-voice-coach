@@ -2,14 +2,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
+import { useTodayIncidents } from "@/hooks/useIncidents";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [pressing, setPressing] = useState(false);
+  const { data: incidents } = useTodayIncidents();
+
+  const sessionCount = incidents?.length || 0;
+  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback?.length > 0).length || 0;
+  const alignedCount = incidents?.filter((i: any) =>
+    i.incident_feedback?.some((f: any) => f.outcome === "helpful")
+  ).length || 0;
+  const alignmentScore = feedbackCount > 0 ? Math.round((alignedCount / feedbackCount) * 100) : null;
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-background safe-top">
-      {/* Header */}
       <header className="w-full max-w-md px-6 pt-8 pb-2">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
@@ -22,29 +30,27 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Quick status cards — moved to top */}
       <div className="w-full max-w-md px-6 pb-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-secondary p-4">
             <p className="text-xs font-body font-medium text-muted-foreground">Today's Sessions</p>
-            <p className="mt-1 text-2xl font-display font-bold">0</p>
+            <p className="mt-1 text-2xl font-display font-bold">{sessionCount}</p>
           </div>
           <div className="rounded-2xl bg-secondary p-4">
             <p className="text-xs font-body font-medium text-muted-foreground">Alignment Score</p>
-            <p className="mt-1 text-2xl font-display font-bold">—</p>
+            <p className="mt-1 text-2xl font-display font-bold">
+              {alignmentScore !== null ? `${alignmentScore}%` : "—"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Main SOS area — pushed lower for thumb reach */}
       <div className="flex flex-1 flex-col items-center justify-end px-6 pb-36">
         <p className="mb-8 text-center font-body text-sm text-muted-foreground leading-relaxed max-w-[240px]">
           When things get tough, press the button. We'll guide you through it.
         </p>
 
-        {/* SOS Button with pulse */}
         <div className="relative">
-          {/* Pulse rings */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="h-44 w-44 rounded-full bg-primary/10 sos-pulse-ring" />
           </div>
