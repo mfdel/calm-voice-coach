@@ -2,6 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export function useChildHistorySummary(childId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["child_history_summary", childId],
+    enabled: !!user && !!childId,
+    staleTime: 1000 * 60 * 60 * 24,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("child-history-summary", {
+        body: { child_id: childId },
+      });
+      if (error) throw error;
+      return data as { summary_text: string; generated_at: string; cached: boolean };
+    },
+  });
+}
+
 export function useTodayIncidents() {
   const { user } = useAuth();
   const today = new Date();
