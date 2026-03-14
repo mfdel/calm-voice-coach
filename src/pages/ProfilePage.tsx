@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Shield, Plus, ChevronRight, Loader2 } from "lucide-react";
 import { useChildProfiles, useAddChild, useRedLines, useToggleRedLine, useParentingPreferences, useUpsertPreferences } from "@/hooks/useProfile";
 import { RED_LINE_OPTIONS, TRIGGER_OPTIONS, AGE_GROUPS } from "@/lib/constants";
@@ -6,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: children, isLoading: childrenLoading } = useChildProfiles();
   const { data: redLines, isLoading: redLinesLoading } = useRedLines();
   const { data: prefs } = useParentingPreferences();
@@ -49,7 +51,11 @@ export default function ProfilePage() {
             ) : (
               <>
                 {children?.map((child: any) => (
-                  <div key={child.id} className="rounded-2xl bg-secondary p-4">
+                  <button
+                    key={child.id}
+                    onClick={() => navigate(`/profile/${child.id}`)}
+                    className="w-full rounded-2xl bg-secondary p-4 text-left active:scale-[0.98] transition-transform"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-display font-bold text-lg">{child.display_name}</p>
@@ -66,7 +72,7 @@ export default function ProfilePage() {
                         ))}
                       </div>
                     )}
-                  </div>
+                  </button>
                 ))}
 
                 {showAddChild ? (
@@ -76,6 +82,7 @@ export default function ProfilePage() {
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="Child's name"
                       className="w-full rounded-xl bg-accent px-4 py-2.5 font-body text-sm outline-none"
+                      style={{ fontSize: '16px' }}
                     />
                     <div className="flex flex-wrap gap-2">
                       {AGE_GROUPS.map((ag) => (

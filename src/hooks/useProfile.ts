@@ -18,6 +18,23 @@ export function useChildProfiles() {
   });
 }
 
+export function useSingleChildProfile(childId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["child_profile", childId],
+    enabled: !!user && !!childId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("child_profiles")
+        .select("*")
+        .eq("id", childId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function useAddChild() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -32,6 +49,33 @@ export function useAddChild() {
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["child_profiles"] }),
+  });
+}
+
+export function useUpdateChild() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: {
+      id: string;
+      display_name?: string;
+      age_group?: string;
+      known_triggers?: string[];
+      calming_preferences?: string[];
+      development_notes?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("child_profiles")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["child_profiles"] });
+      qc.invalidateQueries({ queryKey: ["child_profile", data.id] });
+    },
   });
 }
 

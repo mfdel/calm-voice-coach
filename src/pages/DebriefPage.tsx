@@ -1,10 +1,11 @@
 import { Moon, ThumbsUp, ThumbsDown, ChevronDown, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { useTodayIncidents, useSubmitFeedback } from "@/hooks/useIncidents";
+import { useState, useMemo } from "react";
+import { useIncidentsByDateRange, useSubmitFeedback } from "@/hooks/useIncidents";
 import { PROBLEM_CATEGORIES } from "@/lib/constants";
-import { format } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { MonthlySummaryWidget } from "@/components/MonthlySummaryWidget";
 
 const REASON_TAGS = [
   { code: "too_permissive", label: "Too permissive" },
@@ -15,8 +16,20 @@ const REASON_TAGS = [
   { code: "already_tried", label: "Already tried this" },
 ];
 
+const RANGE_OPTIONS = [
+  { label: "Today", days: 0 },
+  { label: "7 Days", days: 7 },
+  { label: "30 Days", days: 30 },
+] as const;
+
 export default function DebriefPage() {
-  const { data: incidents, isLoading } = useTodayIncidents();
+  const [rangeDays, setRangeDays] = useState(0);
+  const startDate = useMemo(() => {
+    const d = rangeDays === 0 ? new Date() : subDays(new Date(), rangeDays);
+    return startOfDay(d);
+  }, [rangeDays]);
+
+  const { data: incidents, isLoading } = useIncidentsByDateRange(startDate);
   const submitFeedback = useSubmitFeedback();
   const { toast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -24,8 +37,10 @@ export default function DebriefPage() {
   const [feedbackNotes, setFeedbackNotes] = useState<Record<string, string>>({});
   const [localOutcomes, setLocalOutcomes] = useState<Record<string, string>>({});
 
-  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback != null).length || 0;
-  const alignedCount = incidents?.filter((i: any) => i.incident_feedback?.outcome === "helpful").length || 0;
+  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback?.length > 0).length || 0;
+  const alignedCount = incidents?.filter((i: any) =>
+    i.incident_feedback?.some((f: any) => f.outcome === "helpful")
+  ).length || 0;
 
   const toggleTag = (incidentId: string, tag: string) => {
     setSelectedTags((prev) => {
@@ -73,11 +88,28 @@ export default function DebriefPage() {
           <Moon className="h-5 w-5 text-muted-foreground" />
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">Nightly Debrief</h1>
-            <p className="font-body text-sm text-muted-foreground">Today's reflection</p>
+            <p className="font-body text-sm text-muted-foreground">
+              {rangeDays === 0 ? "Today's reflection" : `Last ${rangeDays} days`}
+            </p>
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl bg-secondary p-5">
+        {/* Range selector */}
+        <div className="mt-5 flex gap-2">
+          {RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.days}
+              onClick={() => setRangeDays(opt.days)}
+              className={`rounded-full px-4 py-2 font-body text-sm font-medium transition-colors ${
+                rangeDays === opt.days ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-2xl bg-secondary p-5">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-2xl font-display font-bold">{incidents?.length || 0}</p>
@@ -100,7 +132,7 @@ export default function DebriefPage() {
           <div className="flex justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : !incidents?.length ? (
           <div className="mt-12 text-center">
-            <p className="font-body text-sm text-muted-foreground">No SOS sessions today.</p>
+            <p className="font-body text-sm text-muted-foreground">No SOS sessions in this period.</p>
             <p className="font-body text-xs text-muted-foreground mt-1">Use the SOS button when things get tough.</p>
           </div>
         ) : (
@@ -187,7 +219,6 @@ export default function DebriefPage() {
                             </button>
                           </div>
 
-                          {/* Reason tags — shown after misaligned or always for richer feedback */}
                           <AnimatePresence>
                             {(effectiveOutcome === "misaligned" || incTags.length > 0) && (
                               <motion.div
@@ -241,6 +272,9 @@ export default function DebriefPage() {
             })}
           </div>
         )}
+
+        {/* Monthly Summary */}
+        <MonthlySummaryWidget />
       </div>
     </div>
   );
