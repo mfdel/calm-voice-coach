@@ -249,28 +249,6 @@ export default function SOSModePage() {
           ))}
         </div>
 
-        {children && children.length > 1 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="pb-5 overflow-x-auto items-end justify-end flex flex-row px-[24px] gap-[8px]"
-          >
-            {children.map((c: any) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedChild(c.id)}
-                className={`shrink-0 rounded-full px-5 py-2.5 font-body text-base font-semibold transition-all duration-200 ${
-                  activeChildId === c.id
-                    ? "bg-sos-accent text-sos-fg shadow-lg shadow-sos-accent/20"
-                    : "bg-sos-fg/5 text-sos-fg/50 backdrop-blur-sm"
-                }`}
-              >
-                {c.display_name}
-              </button>
-            ))}
-          </motion.div>
-        )}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -315,6 +293,29 @@ export default function SOSModePage() {
             </motion.div>
           )}
         </motion.div>
+
+        {children && children.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="pb-5 overflow-x-auto items-end justify-end flex flex-row px-[24px] gap-[8px]"
+          >
+            {children.map((c: any) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedChild(c.id)}
+                className={`shrink-0 rounded-full px-5 py-2.5 font-body text-base font-semibold transition-all duration-200 ${
+                  activeChildId === c.id
+                    ? "bg-sos-accent text-sos-fg shadow-lg shadow-sos-accent/20"
+                    : "bg-sos-fg/5 text-sos-fg/50 backdrop-blur-sm"
+                }`}
+              >
+                {c.display_name}
+              </button>
+            ))}
+          </motion.div>
+        )}
       </div>
     );
   }
