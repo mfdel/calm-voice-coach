@@ -2,6 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export function useChildHistorySummary(childId: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["child_history_summary", childId],
+    enabled: !!user && !!childId,
+    staleTime: 1000 * 60 * 60 * 24,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("child-history-summary", {
+        body: { child_id: childId },
+      });
+      if (error) throw error;
+      return data as { summary_text: string; generated_at: string; cached: boolean };
+    },
+  });
+}
+
 export function useTodayIncidents() {
   const { user } = useAuth();
   const today = new Date();
@@ -26,11 +42,11 @@ export function useTodayIncidents() {
   });
 }
 
-export function useIncidentsByDateRange(startDate: Date, endDate?: Date) {
+export function useIncidentsByDateRange(startDate: Date, endDate?: Date, childId?: string | null) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["incidents_range", user?.id, startDate.toISOString(), endDate?.toISOString()],
+    queryKey: ["incidents_range", user?.id, startDate.toISOString(), endDate?.toISOString(), childId],
     enabled: !!user,
     queryFn: async () => {
       let query = supabase
@@ -38,13 +54,17 @@ export function useIncidentsByDateRange(startDate: Date, endDate?: Date) {
         .select(`
           *,
           incident_suggestions(*),
-          incident_feedback(*)
+          incident_feedback(*),
+          child_profiles(display_name)
         `)
         .gte("created_at", startDate.toISOString())
         .order("created_at", { ascending: false });
 
       if (endDate) {
         query = query.lte("created_at", endDate.toISOString());
+      }
+      if (childId) {
+        query = query.eq("child_id", childId);
       }
 
       const { data, error } = await query;
@@ -54,17 +74,17 @@ export function useIncidentsByDateRange(startDate: Date, endDate?: Date) {
   });
 }
 
-export function useMonthlyIncidentsSummary() {
+export function useMonthlyIncidentsSummary(childId?: string | null) {
   const { user } = useAuth();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   thirtyDaysAgo.setHours(0, 0, 0, 0);
 
   return useQuery({
-    queryKey: ["incidents_monthly", user?.id],
+    queryKey: ["incidents_monthly", user?.id, childId],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("incidents")
         .select(`
           *,
@@ -73,12 +93,17 @@ export function useMonthlyIncidentsSummary() {
         `)
         .gte("created_at", thirtyDaysAgo.toISOString())
         .order("created_at", { ascending: false });
+
+      if (childId) {
+        query = query.eq("child_id", childId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       const incidents = data || [];
       const totalSessions = incidents.length;
 
-      // Category counts
       const categoryCounts: Record<string, number> = {};
       for (const inc of incidents) {
         categoryCounts[inc.problem_category] = (categoryCounts[inc.problem_category] || 0) + 1;
@@ -87,7 +112,6 @@ export function useMonthlyIncidentsSummary() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-      // Alignment
       const withFeedback = incidents.filter((i: any) => i.incident_feedback != null);
       const feedbackCount = withFeedback.length;
       const helpfulCount = withFeedback.filter((i: any) => i.incident_feedback?.outcome === "helpful").length;

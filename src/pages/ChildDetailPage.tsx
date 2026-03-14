@@ -5,11 +5,6 @@ import { useSingleChildProfile, useUpdateChild } from "@/hooks/useProfile";
 import { AGE_GROUPS, TRIGGER_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 
-const CALMING_OPTIONS = [
-  "Deep breaths", "Counting", "Hugs", "Quiet space", "Music",
-  "Fidget toy", "Drawing", "Walking", "Reading", "Rocking",
-];
-
 export default function ChildDetailPage() {
   const { childId } = useParams<{ childId: string }>();
   const navigate = useNavigate();
@@ -20,7 +15,6 @@ export default function ChildDetailPage() {
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState("toddler");
   const [triggers, setTriggers] = useState<string[]>([]);
-  const [calming, setCalming] = useState<string[]>([]);
   const [devNotes, setDevNotes] = useState("");
   const [dirty, setDirty] = useState(false);
 
@@ -29,7 +23,6 @@ export default function ChildDetailPage() {
       setName(child.display_name);
       setAgeGroup(child.age_group);
       setTriggers((child.known_triggers as string[]) || []);
-      setCalming((child.calming_preferences as string[]) || []);
       setDevNotes(child.development_notes || "");
     }
   }, [child]);
@@ -46,7 +39,6 @@ export default function ChildDetailPage() {
       display_name: name,
       age_group: ageGroup,
       known_triggers: triggers,
-      calming_preferences: calming,
       development_notes: devNotes || undefined,
     });
     setDirty(false);
@@ -129,24 +121,6 @@ export default function ChildDetailPage() {
             </div>
           </div>
 
-          {/* Calming Preferences */}
-          <div>
-            <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Calming Preferences</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {CALMING_OPTIONS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => toggleItem(calming, c, setCalming)}
-                  className={`rounded-full px-3 py-2 font-body text-xs font-medium transition-colors ${
-                    calming.includes(c) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Development Notes */}
           <div>
             <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Development Notes</label>
@@ -159,6 +133,7 @@ export default function ChildDetailPage() {
               style={{ fontSize: '16px' }}
             />
           </div>
+
 
           {/* Save */}
           <button

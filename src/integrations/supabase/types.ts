@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      child_history_summaries: {
+        Row: {
+          child_id: string
+          generated_at: string
+          id: string
+          summary_text: string
+          user_id: string
+          window_days: number
+        }
+        Insert: {
+          child_id: string
+          generated_at?: string
+          id?: string
+          summary_text: string
+          user_id: string
+          window_days?: number
+        }
+        Update: {
+          child_id?: string
+          generated_at?: string
+          id?: string
+          summary_text?: string
+          user_id?: string
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_history_summaries_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       child_profiles: {
         Row: {
           age_group: string
