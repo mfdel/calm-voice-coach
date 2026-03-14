@@ -385,9 +385,9 @@ Return ONLY valid JSON with this exact schema:
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseKey}`,
+          Authorization: authHeader!,
         },
-        body: JSON.stringify({ user_id: user.id, child_id }),
+        body: JSON.stringify({ child_id }),
       }).catch((err) => console.error("Curate trigger error:", err));
     }
 
