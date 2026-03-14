@@ -253,12 +253,12 @@ export default function SOSModePage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="w-full pb-[40px]">
+          className="w-full pb-[40px] py-[10px]">
           
           {!showFreeText ?
           <button
             onClick={() => setShowFreeText(true)}
-            className="sos-card-hover group flex w-full items-center gap-4 rounded-3xl p-5 text-left active:scale-[0.97] transition-transform">
+            className="sos-card-hover group w-full gap-4 rounded-3xl p-5 text-left active:scale-[0.97] transition-transform px-[24px] flex items-center justify-center pt-[20px]">
             
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sos-fg/5 group-active:bg-sos-accent/20 transition-colors">
                 <PenLine className="h-5 w-5 text-sos-fg/40" />
