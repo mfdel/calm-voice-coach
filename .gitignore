@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+reviews
 
 # Capacitor iOS — exclude only CocoaPods cache and personal Xcode settings
 ios/App/Pods

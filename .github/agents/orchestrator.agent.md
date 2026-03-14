@@ -15,7 +15,7 @@ description: >
   user: "SOS suggestions are coming back blank for some users"
   assistant: "I'll trace the pipeline — dispatching supabase-explorer and debug-executor simultaneously to find the root cause."
   </example>
-tools: [vscode/getProjectSetupInfo, vscode/memory, vscode/runCommand, vscode/askQuestions, read/problems, read/readFile, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, todo]
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, read/problems, read/readFile, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, web/fetch, browser/openBrowserPage, todo]
 ---
 
 # Orchestrator — ParentPilot

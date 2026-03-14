@@ -18,6 +18,18 @@ const RED_LINE_KEYWORDS: Record<string, string[]> = {
   comparison: ["your brother doesn't", "your sister can", "why can't you be like", "other kids don't"],
 };
 
+// ── Human-readable red-line labels for prompt (more specific than enum keys) ──
+const RED_LINE_HUMAN_LABELS: Record<string, string> = {
+  cry_it_out: "cry it out / extinction sleep training",
+  time_outs: "time-outs / sending child to room as punishment",
+  physical_punishment: "any physical punishment (spanking, smacking, hitting)",
+  yelling: "raising voice or yelling at the child",
+  screen_bribery: "using screens as a bribe or behavioral reward",
+  food_rewards: "using food or treats as a behavioral reward",
+  shame_language: "shame language (\"bad boy/girl\", \"what's wrong with you\")",
+  comparison: "comparing to siblings or other children",
+};
+
 // ── Fallback response per V1_PROMPT_RAG_STRATEGY.md §14 ──
 const FALLBACK_RESPONSE = {
   summary: "This seems like a high-stress moment. Start by lowering stimulation and simplifying your next step.",
@@ -120,7 +132,8 @@ serve(async (req) => {
       .slice(0, 3)
       .map((inc: any) => {
         const outcome = inc.incident_feedback?.outcome || "unknown";
-        return `- Previous: "${inc.summary_text}" → outcome: ${outcome}`;
+        const label = outcome === "helpful" ? "✓ WORKED" : outcome === "misaligned" ? "✗ DID NOT WORK" : "? UNKNOWN";
+        return `- [${label}] "${inc.summary_text}"`;
       });
 
     const retrievalMs = Date.now() - retrievalStart;
@@ -129,77 +142,76 @@ serve(async (req) => {
     // STEP 3: ASSEMBLE PROMPT (per V1_PROMPT_RAG_STRATEGY.md §7)
     // ═══════════════════════════════════════════════════════════
 
-    // Section 1: System role and safety contract
-    const systemPrompt = `You are ParentPilot, a calm parenting SOS assistant.
+    const humanRedLines = redLines.map((rl: string) => RED_LINE_HUMAN_LABELS[rl] || rl);
+    const redLineBlock = humanRedLines.length > 0
+      ? `\n\n## This Parent's Forbidden Tactics (Absolute Hard Stops)\nYou MUST NOT suggest any of the following, even indirectly or as a softened alternative:\n${humanRedLines.map((rl: string) => `- ${rl}`).join("\n")}`
+      : "";
 
-Your job is to help a parent in a stressful moment with short, practical, emotionally intelligent guidance.
+    const systemPrompt = `You are ParentPilot — a calm, warm parenting coach responding to a parent in crisis RIGHT NOW.
 
-Rules:
-- Respect the parent's red lines and NEVER recommend forbidden tactics.
-- Prefer concrete next steps over theory.
-- Keep suggestions grounded in the child's age, triggers, and what has worked before.
-- Do not shame, moralize, or overwhelm the parent.
-- Return only valid JSON that matches the requested schema.
-- Give 2-3 suggestions max.
-- Each suggestion must include one exact script the parent can say.
-- Use the retrieved guidance snippets as evidence to ground your suggestions.
-- Learn from prior incident outcomes when available.`;
+## Role
+You are a knowledgeable, non-judgmental friend who knows this child and respects this parent's values. Not a clinician. Not a lecturer. Immediate practical help only.
+
+## Hard Constraints
+- RED LINES are absolute. Never suggest any listed tactic — not even indirectly, as a softened version, or as an option to consider.${redLineBlock}
+- If there is any physical safety concern, populate safety_note immediately and make de-escalation Suggestion 1.
+- Scripts must be words the parent can say aloud within the next 60 seconds.
+
+## Quality Standards
+- Ground every suggestion in the provided <evidence> snippets — don't invent guidance not found there.
+- Prioritize suggestions that align with the child's calming preferences.
+- Match the parent's parenting style and values throughout. No moralizing.
+- summary: ≤ 2 sentences, empathetic, frames what is happening.
+- reason: ≤ 1 sentence — why this approach fits this specific child and moment.
+- script: ≤ 25 words, natural spoken language, usable immediately.
+- Return exactly 2–3 suggestions ordered from most to least immediately actionable.`;
 
     const sections: string[] = [];
 
-    // Section 2: Parenting style + red lines
+    // Section 1: Context block — parenting style, values, red lines
     if (parenting_snapshot) {
-      sections.push(`PARENTING STYLE:
-- style: ${parenting_snapshot.style || "gentle"}
-- values: ${(parenting_snapshot.values || []).join(", ")}
-- RED LINES (NEVER recommend these): ${redLines.join(", ")}`);
+      sections.push(`<context>
+PARENTING STYLE: ${parenting_snapshot.style || "gentle"}
+VALUES: ${(parenting_snapshot.values || []).join(", ")}
+RED LINES — never recommend these tactics under any circumstances:
+${humanRedLines.map((rl: string) => `  • ${rl}`).join("\n")}
+</context>`);
     }
 
-    // Section 3: Child profile snapshot
+    // Section 2: Child profile block
     if (child_snapshot) {
-      sections.push(`CHILD PROFILE:
-- age group: ${ageGroup}
-- known triggers: ${(child_snapshot.known_triggers || []).join(", ")}
-- calming preferences: ${(child_snapshot.calming_preferences || []).join(", ")}`);
+      sections.push(`<child>
+AGE GROUP: ${ageGroup}
+KNOWN TRIGGERS: ${(child_snapshot.known_triggers || []).join(", ") || "none listed"}
+CALMING PREFERENCES: ${(child_snapshot.calming_preferences || []).join(", ") || "none listed"}
+</child>`);
     }
 
-    // Section 4: Current SOS situation
-    sections.push(`CURRENT SOS:
-- problem category: ${problem_category}
-- note: ${note_text || "No additional details provided."}`);
+    // Section 3: Current SOS situation
+    sections.push(`<situation>
+PROBLEM CATEGORY: ${problem_category}
+PARENT'S NOTE: ${note_text || "No additional details provided."}
+</situation>`);
 
-    // Section 5: Retrieved guidance snippets
+    // Section 4: Retrieved evidence snippets
     if (topSnippets.length > 0) {
       const snippetText = topSnippets
-        .map((s: any, i: number) => `${i + 1}. [${s.snippet_type}] ${s.title}: ${s.content}`)
-        .join("\n");
-      sections.push(`RETRIEVED GUIDANCE (use these as evidence to ground your suggestions):
-${snippetText}`);
+        .map((s: any, i: number) => `[${i + 1}] (${s.snippet_type}) ${s.title}\n${s.content}`)
+        .join("\n\n");
+      sections.push(`<evidence>
+Research-backed guidance for this problem and age group. Build every suggestion on these:
+
+${snippetText}
+</evidence>`);
     }
 
-    // Section 6: Recent incident learnings
+    // Section 5: Prior outcome learnings
     if (priorLearnings.length > 0) {
-      sections.push(`RECENT INCIDENT LEARNINGS (adapt based on what worked/didn't):
-${priorLearnings.join("\n")}`);
+      sections.push(`<prior_outcomes category="${problem_category}">
+Previous sessions for this same problem. Reinforce what worked; avoid repeating what didn't:
+${priorLearnings.join("\n")}
+</prior_outcomes>`);
     }
-
-    // Section 7: Response schema contract
-    sections.push(`RESPONSE SCHEMA:
-Return ONLY valid JSON with this exact schema:
-{
-  "summary": "1-2 sentence situation framing",
-  "suggestions": [
-    {
-      "title": "short action title",
-      "reason": "why this fits now",
-      "script": "exact words parent can say"
-    }
-  ],
-  "safety_note": null or string if safety concern detected
-}
-- suggestions: 2-3 max
-- script: immediately usable spoken language
-- summary: concise, empathetic`);
 
     const userMessage = sections.join("\n\n");
 

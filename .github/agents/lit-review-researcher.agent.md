@@ -15,7 +15,7 @@ description: >
   user: "Find literature on causal inference for observational studies"
   assistant: "I'll query academic databases with multiple search terms and compile a deduplicated, annotated bibliography."
   </example>
-tools: [execute/runInTerminal, execute/getTerminalOutput, read/readFile, read/problems, edit/createFile, edit/editFiles, search/codebase, search/textSearch, search/fileSearch, search/listDirectory, web/fetch, todo]
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, execute/getTerminalOutput, execute/runInTerminal, read/getNotebookSummary, read/problems, read/readFile, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createFile, edit/editFiles, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/searchSubagent, search/usages, web/fetch, browser/openBrowserPage, todo]
 ---
 
 You are the **Literature Review Researcher** — a specialist in systematic academic literature searching. You search real academic databases and produce verified, annotated bibliographies.

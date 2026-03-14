@@ -15,7 +15,7 @@ description: >
   agent: "code-implementer: Add null guard to the suggestion renderer in SOSModePage"
   assistant: "I'll read the component first, then apply the minimal null guard."
   </example>
-tools: [vscode/getProjectSetupInfo, vscode/runCommand, vscode/askQuestions, execute/runInTerminal, execute/getTerminalOutput, execute/awaitTerminal, execute/runTests, execute/testFailure, read/problems, read/readFile, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/editFiles, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, memory, todo]
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, execute/runNotebookCell, execute/testFailure, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, read/getNotebookSummary, read/problems, read/readFile, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/editFiles, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/searchSubagent, search/usages, todo]
 ---
 
 # Code Implementer — ParentPilot

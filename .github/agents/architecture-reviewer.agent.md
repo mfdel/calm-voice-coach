@@ -21,7 +21,7 @@ description: >
   user: "The app is getting slow — where might the bottlenecks be architecturally?"
   assistant: "I'll use architecture-reviewer to identify over-fetching, missing caching, and heavy re-render patterns."
   </example>
-tools: [read/readFile, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, search/changes, memory, todo]
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, read/getNotebookSummary, read/problems, read/readFile, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/searchSubagent, search/usages, web/fetch, browser/openBrowserPage, todo]
 ---
 
 # Architecture Reviewer — ParentPilot

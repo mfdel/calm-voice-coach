@@ -6,6 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function relativeDays(isoDate: string): string {
+  const days = Math.floor((Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60 * 24));
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  return `${days} days ago`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -67,6 +74,13 @@ serve(async (req) => {
       });
     }
 
+    // Fetch parenting preferences for style-aligned forward suggestions
+    const { data: parentingPrefs } = await supabase
+      .from("parenting_preferences")
+      .select("style, values")
+      .eq("user_id", user.id)
+      .single();
+
     // Fetch last 30 days of incidents for this child
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: incidents } = await supabase
@@ -92,32 +106,48 @@ serve(async (req) => {
     // Assemble prompt
     const sessionsText = incidents.map((inc: any, i: number) => {
       const suggestions = (inc.incident_suggestions || [])
-        .map((s: any) => `  - ${s.title}: ${s.reason}`)
+        .map((s: any) => `  - ${s.title}: ${s.reason}${s.script ? `\n    Script used: "${s.script}"` : ""}`)
         .join("\n");
       const feedback = inc.incident_feedback;
       const feedbackText = feedback
         ? `  Feedback: ${feedback.outcome}${feedback.reason_tags ? ` (${(feedback.reason_tags as string[]).join(", ")})` : ""}`
         : "  Feedback: none";
-      return `${i + 1}. [${inc.problem_category}] ${inc.summary_text || "No summary"} (${inc.created_at})\n${suggestions}\n${feedbackText}`;
+      return `${i + 1}. [${inc.problem_category}] ${inc.summary_text || "No summary"} (${relativeDays(inc.created_at)})\n${suggestions}\n${feedbackText}`;
     }).join("\n\n");
 
-    const prompt = `You are ParentPilot, a parenting insights assistant.
+    const parentingStyle = parentingPrefs?.style || "balanced";
+    const parentingValues = (parentingPrefs?.values || []).join(", ") || "not specified";
 
-CHILD PROFILE:
-- Name: ${child.display_name}
-- Age group: ${child.age_group}
-- Known triggers: ${((child.known_triggers as string[]) || []).join(", ") || "none listed"}
+    const systemMessage = `You are ParentPilot, a warm and practical parenting coach writing a monthly progress summary for a parent.
 
-SESSIONS (last 30 days, ${incidents.length} total):
+Write exclusively in flowing, empathetic paragraphs — no bullet points, no headers, no markdown formatting.
+Tone: warm but direct, like a knowledgeable friend reviewing their child's month together. No clinical jargon. No moralizing.
+Be specific — reference actual session content and scripts used, not generic advice.
+Be hopeful — acknowledge progress and always close with actionable, forward-looking guidance.`;
+
+    const userMessage = `<child_profile>
+Name: ${child.display_name}
+Age group: ${child.age_group}
+Known triggers: ${((child.known_triggers as string[]) || []).join(", ") || "none listed"}
+</child_profile>
+
+<parent_style>
+Parenting style: ${parentingStyle}
+Values: ${parentingValues}
+Note: forward-looking suggestions in paragraph 4 must align with this style and these values.
+</parent_style>
+
+<sessions>
+Last 30 days — ${incidents.length} session(s), most recent first:
+
 ${sessionsText}
+</sessions>
 
-Write a concise narrative summary (3-5 paragraphs) covering:
-1. Most recurring problem categories and patterns
-2. Advice that was consistently marked "helpful" and why it worked
-3. Advice that was marked "misaligned" and common reason tags
-4. 2-3 actionable suggestions for the coming weeks
-
-Be warm, specific, and practical. Reference actual session data. Do not use bullet points — write in flowing paragraphs.`;
+Write a narrative summary of 3–5 paragraphs covering:
+1. Most recurring problem categories and patterns observed.
+2. Advice that was consistently marked "helpful" — reference the specific scripts that worked.
+3. Advice marked "misaligned" and what the reason tags suggest about fit.
+4. 2–3 actionable, style-aligned suggestions for the coming weeks (must fit a ${parentingStyle} parenting approach).`;
 
     // Call Gemini via Lovable Gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -127,12 +157,13 @@ Be warm, specific, and practical. Reference actual session data. Do not use bull
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "user", content: prompt },
+          { role: "system", content: systemMessage },
+          { role: "user", content: userMessage },
         ],
         temperature: 0.5,
-        max_tokens: 1000,
+        max_tokens: 1200,
       }),
     });
 
