@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useSingleChildProfile, useUpdateChild } from "@/hooks/useProfile";
-import { useChildHistorySummary } from "@/hooks/useIncidents";
 import { AGE_GROUPS, TRIGGER_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 
 export default function ChildDetailPage() {
   const { childId } = useParams<{ childId: string }>();
@@ -13,7 +11,6 @@ export default function ChildDetailPage() {
   const { toast } = useToast();
   const { data: child, isLoading } = useSingleChildProfile(childId);
   const updateChild = useUpdateChild();
-  const { data: insightData, isLoading: insightLoading, error: insightError, refetch: refetchInsight } = useChildHistorySummary(childId);
 
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState("toddler");
