@@ -277,7 +277,7 @@ export default function SOSModePage() {
                 onChange={(e) => setFreeText(e.target.value)}
                 placeholder="Describe what's happening…"
                 maxLength={500}
-                rows={1}
+                rows={3}
                 autoFocus
                 className="w-full rounded-2xl bg-sos-fg/5 border border-sos-fg/8 p-4 font-body text-sm text-sos-fg placeholder:text-sos-fg/25 outline-none resize-none focus:border-sos-accent/30 transition-colors"
               />
