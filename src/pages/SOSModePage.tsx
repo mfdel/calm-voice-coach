@@ -194,7 +194,7 @@ export default function SOSModePage() {
   // ─── Problem picker ───
   if (step === "pick_problem") {
     return (
-      <div className="fixed inset-0 z-50 bg-sos-bg safe-top safe-bottom overflow-auto flex-col flex items-center justify-center">
+      <div className="fixed inset-0 z-50 bg-sos-bg safe-top safe-bottom overflow-auto flex-col flex items-center justify-start">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="sos-ambient-blob absolute -top-32 -left-32 h-80 w-80 rounded-full bg-sos-accent/10 blur-3xl" />
           <div
@@ -203,7 +203,7 @@ export default function SOSModePage() {
           
         </div>
 
-        <div className="relative flex items-center justify-between px-6 pt-4">
+        <div className="relative flex w-full items-center justify-between px-6 pt-4">
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -215,7 +215,7 @@ export default function SOSModePage() {
           </motion.div>
           <button
             onClick={handleExit}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-fg/5 backdrop-blur-sm text-sos-fg/60 hover:text-sos-fg/80 transition-colors">
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-sos-fg/5 backdrop-blur-sm text-sos-fg/60 hover:text-sos-fg/80 transition-colors">
             
             <X className="h-5 w-5" />
           </button>
@@ -225,13 +225,13 @@ export default function SOSModePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="relative px-6 pt-8 pb-2">
+          className="relative w-full px-6 pt-8 pb-2">
           
           <h2 className="font-display text-3xl font-extrabold tracking-tight text-sos-fg">What's happening?</h2>
           <p className="mt-2 font-body text-sm text-sos-fg/40">Tap the closest match</p>
         </motion.div>
 
-        <div className="relative grid grid-cols-2 gap-3 px-6">
+        <div className="relative grid w-full grid-cols-2 gap-3 px-6">
           {curatedCategories.slice(0, 4).map((cat, i) =>
           <motion.button
             key={cat.code}
@@ -253,7 +253,7 @@ export default function SOSModePage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="px-6 pt-5 my-0 py-0 mb-0 pb-[40px] pl-0 pr-0">
+          className="w-full pb-[40px]">
           
           {!showFreeText ?
           <button
@@ -279,7 +279,7 @@ export default function SOSModePage() {
               maxLength={500}
               rows={3}
               autoFocus
-              className="w-full rounded-2xl bg-sos-fg/5 border border-sos-fg/8 p-4 font-body text-sm text-sos-fg placeholder:text-sos-fg/25 outline-none resize-none focus:border-sos-accent/30 transition-colors py-[20px] pl-[10px] px-px pr-[10px]" />
+              className="w-full rounded-2xl bg-sos-fg/5 border border-sos-fg/8 py-5 px-[10px] font-body text-base text-sos-fg placeholder:text-sos-fg/25 outline-none resize-none focus:border-sos-accent/30 transition-colors" />
             
 
               <button
@@ -332,13 +332,12 @@ export default function SOSModePage() {
               setStep("pick_problem");
               setShowFreeText(false);
             }}
-            className="font-body text-sm text-sos-fg/60">
-            
+            className="flex min-h-11 items-center px-2 font-body text-sm text-sos-fg/60">
             ← Back
           </button>
           <button
             onClick={handleExit}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
             
             <X className="h-5 w-5" />
           </button>
@@ -358,7 +357,7 @@ export default function SOSModePage() {
               placeholder="E.g. Skipped nap and screaming about pajamas…"
               maxLength={500}
               rows={4}
-              className="w-full rounded-2xl bg-sos-muted p-4 pr-14 font-body text-sm text-sos-fg placeholder:text-sos-fg/30 outline-none resize-none" />
+              className="w-full rounded-2xl bg-sos-muted p-4 pr-14 font-body text-base text-sos-fg placeholder:text-sos-fg/30 outline-none resize-none" />
             
 
             {voiceSupported &&
@@ -395,8 +394,7 @@ export default function SOSModePage() {
               setNoteText("");
               handleSend();
             }}
-            className="font-body text-sm text-sos-fg/40 text-center">
-            
+            className="w-full py-3 font-body text-sm text-sos-fg/40 text-center min-h-11">
             Skip — just get help
           </button>
         </div>
@@ -438,7 +436,7 @@ export default function SOSModePage() {
           </div>
           <button
             onClick={handleExit}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
             
             <X className="h-5 w-5" />
           </button>

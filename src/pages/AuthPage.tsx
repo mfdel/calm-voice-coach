@@ -25,7 +25,7 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: import.meta.env.VITE_EMAIL_REDIRECT_URL ?? window.location.origin },
         });
         if (error) throw error;
         toast({
@@ -45,7 +45,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 safe-top safe-bottom">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-3 mb-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -70,7 +70,7 @@ export default function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-2xl bg-secondary px-4 py-3.5 pl-11 font-body text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-2xl bg-secondary px-4 py-3.5 pl-11 font-body text-base outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div className="relative">
@@ -82,7 +82,7 @@ export default function AuthPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-2xl bg-secondary px-4 py-3.5 pl-11 font-body text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-2xl bg-secondary px-4 py-3.5 pl-11 font-body text-base outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 

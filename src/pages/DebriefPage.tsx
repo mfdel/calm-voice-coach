@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTodayIncidents, useSubmitFeedback } from "@/hooks/useIncidents";
 import { PROBLEM_CATEGORIES } from "@/lib/constants";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 const REASON_TAGS = [
   { code: "too_permissive", label: "Too permissive" },
@@ -17,9 +18,11 @@ const REASON_TAGS = [
 export default function DebriefPage() {
   const { data: incidents, isLoading } = useTodayIncidents();
   const submitFeedback = useSubmitFeedback();
+  const { toast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Record<string, string[]>>({});
   const [feedbackNotes, setFeedbackNotes] = useState<Record<string, string>>({});
+  const [localOutcomes, setLocalOutcomes] = useState<Record<string, string>>({});
 
   const feedbackCount = incidents?.filter((i: any) => i.incident_feedback != null).length || 0;
   const alignedCount = incidents?.filter((i: any) => i.incident_feedback?.outcome === "helpful").length || 0;
@@ -34,13 +37,33 @@ export default function DebriefPage() {
     });
   };
 
+  const getOutcome = (incidentId: string, serverOutcome?: string) =>
+    localOutcomes[incidentId] ?? serverOutcome;
+
   const handleFeedback = (incidentId: string, outcome: string) => {
-    submitFeedback.mutate({
-      incident_id: incidentId,
-      outcome,
-      reason_tags: selectedTags[incidentId] || [],
-      feedback_note: feedbackNotes[incidentId] || undefined,
-    });
+    setLocalOutcomes((prev) => ({ ...prev, [incidentId]: outcome }));
+    submitFeedback.mutate(
+      {
+        incident_id: incidentId,
+        outcome,
+        reason_tags: selectedTags[incidentId] || [],
+        feedback_note: feedbackNotes[incidentId] || undefined,
+      },
+      {
+        onError: () => {
+          setLocalOutcomes((prev) => {
+            const next = { ...prev };
+            delete next[incidentId];
+            return next;
+          });
+          toast({
+            title: "Couldn't save feedback",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   return (
@@ -85,6 +108,8 @@ export default function DebriefPage() {
             {incidents.map((inc: any) => {
               const catLabel = PROBLEM_CATEGORIES.find((c) => c.code === inc.problem_category)?.label || inc.problem_category;
               const feedback = inc.incident_feedback?.[0];
+              const effectiveOutcome = getOutcome(inc.id, feedback?.outcome);
+              const isSubmittingThis = submitFeedback.isPending && submitFeedback.variables?.incident_id === inc.id;
               const suggestions = inc.incident_suggestions || [];
               const incTags = selectedTags[inc.id] || [];
 
@@ -99,10 +124,10 @@ export default function DebriefPage() {
                       <p className="font-body text-xs text-muted-foreground">{format(new Date(inc.created_at), "h:mm a")}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {feedback?.outcome === "helpful" && (
+                      {effectiveOutcome === "helpful" && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-body font-medium text-primary">✓ Aligned</span>
                       )}
-                      {feedback?.outcome === "misaligned" && (
+                      {effectiveOutcome === "misaligned" && (
                         <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-body font-medium text-destructive">Recalibrate</span>
                       )}
                       <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedId === inc.id ? "rotate-180" : ""}`} />
@@ -136,27 +161,35 @@ export default function DebriefPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleFeedback(inc.id, "helpful")}
-                              disabled={submitFeedback.isPending}
+                              disabled={isSubmittingThis}
                               className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
-                                feedback?.outcome === "helpful" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+                                effectiveOutcome === "helpful" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
                               }`}
                             >
-                              <ThumbsUp className="h-3.5 w-3.5" /> Yes
+                              {isSubmittingThis && effectiveOutcome === "helpful" ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <ThumbsUp className="h-3.5 w-3.5" />
+                              )} Yes
                             </button>
                             <button
                               onClick={() => handleFeedback(inc.id, "misaligned")}
-                              disabled={submitFeedback.isPending}
+                              disabled={isSubmittingThis}
                               className={`flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-sm font-medium transition-colors active:scale-95 ${
-                                feedback?.outcome === "misaligned" ? "bg-destructive text-destructive-foreground" : "bg-accent text-accent-foreground"
+                                effectiveOutcome === "misaligned" ? "bg-destructive text-destructive-foreground" : "bg-accent text-accent-foreground"
                               }`}
                             >
-                              <ThumbsDown className="h-3.5 w-3.5" /> Recalibrate
+                              {isSubmittingThis && effectiveOutcome === "misaligned" ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <ThumbsDown className="h-3.5 w-3.5" />
+                              )} Recalibrate
                             </button>
                           </div>
 
                           {/* Reason tags — shown after misaligned or always for richer feedback */}
                           <AnimatePresence>
-                            {(feedback?.outcome === "misaligned" || incTags.length > 0) && (
+                            {(effectiveOutcome === "misaligned" || incTags.length > 0) && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
@@ -184,7 +217,8 @@ export default function DebriefPage() {
                                   onChange={(e) => setFeedbackNotes((prev) => ({ ...prev, [inc.id]: e.target.value }))}
                                   placeholder="Anything else? (optional)"
                                   rows={2}
-                                  className="w-full rounded-xl bg-accent p-3 font-body text-xs text-foreground placeholder:text-muted-foreground outline-none resize-none"
+                                  className="w-full rounded-xl bg-accent p-3 font-body text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none"
+                                  style={{ fontSize: '16px' }}
                                 />
                                 {incTags.length > 0 && (
                                   <button

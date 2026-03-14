@@ -82,7 +82,7 @@ export default function ProfilePage() {
                         <button
                           key={ag.value}
                           onClick={() => setNewAgeGroup(ag.value)}
-                          className={`rounded-full px-3 py-1.5 font-body text-xs font-medium transition-colors ${
+                          className={`rounded-full px-3 py-2.5 font-body text-xs font-medium transition-colors ${
                             newAgeGroup === ag.value ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
                           }`}
                         >
@@ -96,7 +96,7 @@ export default function ProfilePage() {
                         <button
                           key={t}
                           onClick={() => setNewTriggers((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t])}
-                          className={`rounded-full px-3 py-1.5 font-body text-xs font-medium transition-colors ${
+                          className={`rounded-full px-3 py-2.5 font-body text-xs font-medium transition-colors ${
                             newTriggers.includes(t) ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
                           }`}
                         >

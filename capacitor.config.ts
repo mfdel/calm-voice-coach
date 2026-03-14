@@ -5,7 +5,10 @@ const config: CapacitorConfig = {
   appName: 'ParentPilot',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
+    scrollEnabled: false,
+    backgroundColor: '#f5f1ec',
+    allowsLinkPreview: false,
   },
 };
 
