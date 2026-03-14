@@ -88,11 +88,9 @@ export function useMonthlyIncidentsSummary() {
         .slice(0, 5);
 
       // Alignment
-      const withFeedback = incidents.filter((i: any) => i.incident_feedback?.length > 0);
+      const withFeedback = incidents.filter((i: any) => i.incident_feedback != null);
       const feedbackCount = withFeedback.length;
-      const helpfulCount = withFeedback.filter((i: any) =>
-        i.incident_feedback.some((f: any) => f.outcome === "helpful")
-      ).length;
+      const helpfulCount = withFeedback.filter((i: any) => i.incident_feedback?.outcome === "helpful").length;
       const alignmentPct = feedbackCount > 0 ? Math.round((helpfulCount / feedbackCount) * 100) : null;
 
       return { totalSessions, topCategories, feedbackCount, helpfulCount, alignmentPct };
