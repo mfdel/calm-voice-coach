@@ -39,7 +39,6 @@ export default function ChildDetailPage() {
       display_name: name,
       age_group: ageGroup,
       known_triggers: triggers,
-      calming_preferences: calming,
       development_notes: devNotes || undefined,
     });
     setDirty(false);
