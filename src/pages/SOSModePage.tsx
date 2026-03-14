@@ -180,7 +180,7 @@ export default function SOSModePage() {
   // ─── Problem picker ───
   if (step === "pick_problem") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-sos-bg safe-top safe-bottom overflow-auto">
+      <div className="fixed inset-0 z-50 bg-sos-bg safe-top safe-bottom overflow-auto items-center justify-start flex flex-col">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="sos-ambient-blob absolute -top-32 -left-32 h-80 w-80 rounded-full bg-sos-accent/10 blur-3xl" />
           <div className="sos-ambient-blob absolute -bottom-40 -right-20 h-96 w-96 rounded-full bg-[hsl(var(--sos-warm)/0.08)] blur-3xl" style={{ animationDelay: "3s" }} />
