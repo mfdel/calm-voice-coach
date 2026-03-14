@@ -448,7 +448,7 @@ export default function SOSModePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-display text-2xl font-extrabold leading-tight tracking-tight text-sos-fg">
+            className="font-display font-extrabold leading-tight tracking-tight text-sos-fg text-lg">
             
             {response.summary}
           </motion.p>
@@ -476,7 +476,7 @@ export default function SOSModePage() {
               transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
               className="rounded-2xl bg-sos-muted p-4">
               
-                <p className="font-display text-sm font-bold text-sos-fg">{s.title}</p>
+                <p className="font-display font-bold text-sos-fg text-2xl">{s.title}</p>
                 <p className="font-body text-xs text-sos-fg/50 mt-1">{s.reason}</p>
               </motion.div>
             )}
