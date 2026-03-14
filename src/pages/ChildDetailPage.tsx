@@ -5,11 +5,6 @@ import { useSingleChildProfile, useUpdateChild } from "@/hooks/useProfile";
 import { AGE_GROUPS, TRIGGER_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 
-const CALMING_OPTIONS = [
-  "Deep breaths", "Counting", "Hugs", "Quiet space", "Music",
-  "Fidget toy", "Drawing", "Walking", "Reading", "Rocking",
-];
-
 export default function ChildDetailPage() {
   const { childId } = useParams<{ childId: string }>();
   const navigate = useNavigate();
@@ -20,7 +15,6 @@ export default function ChildDetailPage() {
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState("toddler");
   const [triggers, setTriggers] = useState<string[]>([]);
-  const [calming, setCalming] = useState<string[]>([]);
   const [devNotes, setDevNotes] = useState("");
   const [dirty, setDirty] = useState(false);
 
@@ -29,7 +23,6 @@ export default function ChildDetailPage() {
       setName(child.display_name);
       setAgeGroup(child.age_group);
       setTriggers((child.known_triggers as string[]) || []);
-      setCalming((child.calming_preferences as string[]) || []);
       setDevNotes(child.development_notes || "");
     }
   }, [child]);
