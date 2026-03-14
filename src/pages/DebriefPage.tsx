@@ -1,7 +1,8 @@
-import { Moon, ThumbsUp, ThumbsDown, ChevronDown, Loader2 } from "lucide-react";
+import { Moon, ThumbsUp, ThumbsDown, ChevronDown, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { useIncidentsByDateRange, useSubmitFeedback } from "@/hooks/useIncidents";
+import { useIncidentsByDateRange, useSubmitFeedback, useChildHistorySummary } from "@/hooks/useIncidents";
+import { useChildProfiles } from "@/hooks/useProfile";
 import { PROBLEM_CATEGORIES } from "@/lib/constants";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -24,14 +25,19 @@ const RANGE_OPTIONS = [
 
 export default function DebriefPage() {
   const [rangeDays, setRangeDays] = useState(0);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+
   const startDate = useMemo(() => {
     const d = rangeDays === 0 ? new Date() : subDays(new Date(), rangeDays);
     return startOfDay(d);
   }, [rangeDays]);
 
-  const { data: incidents, isLoading } = useIncidentsByDateRange(startDate);
+  const { data: children } = useChildProfiles();
+  const { data: incidents, isLoading } = useIncidentsByDateRange(startDate, undefined, selectedChildId);
   const submitFeedback = useSubmitFeedback();
   const { toast } = useToast();
+  const { data: insightData, isLoading: insightLoading, error: insightError, refetch: refetchInsight } = useChildHistorySummary(selectedChildId || undefined);
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Record<string, string[]>>({});
   const [feedbackNotes, setFeedbackNotes] = useState<Record<string, string>>({});
@@ -92,8 +98,33 @@ export default function DebriefPage() {
           </div>
         </div>
 
+        {/* Child selector */}
+        {children && children.length > 0 && (
+          <div className="mt-5 flex gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedChildId(null)}
+              className={`rounded-full px-4 py-2 font-body text-sm font-medium transition-colors ${
+                selectedChildId === null ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              All Children
+            </button>
+            {children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => setSelectedChildId(child.id)}
+                className={`rounded-full px-4 py-2 font-body text-sm font-medium transition-colors ${
+                  selectedChildId === child.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                {child.display_name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Range selector */}
-        <div className="mt-5 flex gap-2">
+        <div className="mt-3 flex gap-2">
           {RANGE_OPTIONS.map((opt) => (
             <button
               key={opt.days}
@@ -137,7 +168,7 @@ export default function DebriefPage() {
           <div className="mt-6 space-y-3">
             {incidents.map((inc: any) => {
               const catLabel = PROBLEM_CATEGORIES.find((c) => c.code === inc.problem_category)?.label || inc.problem_category;
-              const feedback = inc.incident_feedback?.[0];
+              const feedback = inc.incident_feedback;
               const effectiveOutcome = getOutcome(inc.id, feedback?.outcome);
               const isSubmittingThis = submitFeedback.isPending && submitFeedback.variables?.incident_id === inc.id;
               const suggestions = inc.incident_suggestions || [];
@@ -275,7 +306,53 @@ export default function DebriefPage() {
         )}
 
         {/* Monthly Summary */}
-        <MonthlySummaryWidget />
+        <MonthlySummaryWidget childId={selectedChildId} />
+
+        {/* AI 30-Day Insights (per-child only) */}
+        {selectedChildId && (
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-display font-bold uppercase tracking-wider text-muted-foreground">
+                AI Insights
+              </h2>
+            </div>
+            <div className="rounded-2xl bg-secondary p-5">
+              {insightLoading ? (
+                <div className="flex items-center gap-2 justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <p className="font-body text-sm text-muted-foreground">Generating insights…</p>
+                </div>
+              ) : insightError ? (
+                <button onClick={() => refetchInsight()} className="w-full py-4 text-center">
+                  <p className="font-body text-sm text-muted-foreground">Could not load insights. Tap to retry.</p>
+                </button>
+              ) : insightData ? (
+                <div className="space-y-3">
+                  <p className="font-body text-sm text-foreground whitespace-pre-wrap leading-relaxed">{insightData.summary_text}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-body text-xs text-muted-foreground">
+                      Last generated: {format(new Date(insightData.generated_at), "MMM d, h:mm a")}
+                    </p>
+                    <button
+                      onClick={() => refetchInsight()}
+                      className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 font-body text-xs font-medium text-accent-foreground active:scale-95 transition-transform"
+                    >
+                      <RefreshCw className="h-3 w-3" /> Refresh
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => refetchInsight()}
+                  className="flex w-full items-center justify-center gap-2 py-3 font-body text-sm font-medium text-accent-foreground active:scale-95 transition-transform"
+                >
+                  <Sparkles className="h-4 w-4" /> Generate Insights
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

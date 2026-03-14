@@ -2,8 +2,12 @@ import { useMonthlyIncidentsSummary } from "@/hooks/useIncidents";
 import { PROBLEM_CATEGORIES } from "@/lib/constants";
 import { Loader2, TrendingUp } from "lucide-react";
 
-export function MonthlySummaryWidget() {
-  const { data, isLoading } = useMonthlyIncidentsSummary();
+interface MonthlySummaryWidgetProps {
+  childId?: string | null;
+}
+
+export function MonthlySummaryWidget({ childId }: MonthlySummaryWidgetProps) {
+  const { data, isLoading } = useMonthlyIncidentsSummary(childId);
 
   if (isLoading) {
     return (
@@ -27,7 +31,6 @@ export function MonthlySummaryWidget() {
       </div>
 
       <div className="rounded-2xl bg-secondary p-5 space-y-5">
-        {/* Stats row */}
         <div className="grid grid-cols-2 gap-4 text-center">
           <div>
             <p className="text-2xl font-display font-bold">{data.totalSessions}</p>
@@ -41,7 +44,6 @@ export function MonthlySummaryWidget() {
           </div>
         </div>
 
-        {/* Top categories */}
         {data.topCategories.length > 0 && (
           <div>
             <p className="font-body text-xs font-medium text-muted-foreground mb-3">Top Problem Areas</p>
