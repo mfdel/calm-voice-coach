@@ -134,44 +134,6 @@ export default function ChildDetailPage() {
             />
           </div>
 
-          {/* 30-Day Insights */}
-          <div>
-            <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">30-Day Insights</label>
-            <div className="mt-2 rounded-xl bg-secondary p-4">
-              {insightLoading ? (
-                <div className="flex items-center gap-2 justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <p className="font-body text-sm text-muted-foreground">Generating insights…</p>
-                </div>
-              ) : insightError ? (
-                <button onClick={() => refetchInsight()} className="w-full py-4 text-center">
-                  <p className="font-body text-sm text-muted-foreground">Could not load insights. Tap to retry.</p>
-                </button>
-              ) : insightData ? (
-                <div className="space-y-3">
-                  <p className="font-body text-sm text-foreground whitespace-pre-wrap leading-relaxed">{insightData.summary_text}</p>
-                  <div className="flex items-center justify-between">
-                    <p className="font-body text-xs text-muted-foreground">
-                      Last generated: {format(new Date(insightData.generated_at), "MMM d, h:mm a")}
-                    </p>
-                    <button
-                      onClick={() => refetchInsight()}
-                      className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 font-body text-xs font-medium text-accent-foreground active:scale-95 transition-transform"
-                    >
-                      <RefreshCw className="h-3 w-3" /> Refresh
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => refetchInsight()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-body text-sm font-medium text-accent-foreground active:scale-95 transition-transform"
-                >
-                  <Sparkles className="h-4 w-4" /> Generate Insights
-                </button>
-              )}
-            </div>
-          </div>
 
           {/* Save */}
           <button
