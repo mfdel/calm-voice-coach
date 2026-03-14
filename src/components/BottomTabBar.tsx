@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, User, Moon, Settings } from "lucide-react";
+import { Home, User, Moon, Settings, Clock } from "lucide-react";
 
 const tabs = [
   { path: "/", icon: Home, label: "Home" },
+  { path: "/history", icon: Clock, label: "History" },
   { path: "/profile", icon: User, label: "Profile" },
   { path: "/debrief", icon: Moon, label: "Debrief" },
   { path: "/settings", icon: Settings, label: "Settings" },
@@ -24,14 +25,14 @@ export function BottomTabBar() {
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-0.5 px-4 py-1.5 transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground"
               }`}
             >
-              <Icon className="h-6 w-6" strokeWidth={isActive ? 2.5 : 1.8} />
-              <span className="text-[11px] font-body font-medium">{label}</span>
+              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 1.8} />
+              <span className="text-[10px] font-body font-medium">{label}</span>
             </button>
           );
         })}

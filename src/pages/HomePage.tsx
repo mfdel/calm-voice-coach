@@ -10,9 +10,6 @@ export default function HomePage() {
   const { data: incidents } = useTodayIncidents();
 
   const sessionCount = incidents?.length || 0;
-  const feedbackCount = incidents?.filter((i: any) => i.incident_feedback != null).length || 0;
-  const alignedCount = incidents?.filter((i: any) => i.incident_feedback?.outcome === "helpful").length || 0;
-  const alignmentScore = feedbackCount > 0 ? Math.round((alignedCount / feedbackCount) * 100) : null;
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-background safe-top">
@@ -28,20 +25,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="w-full max-w-md px-6 pb-4">
-        <div className="grid grid-cols-2 gap-3">
+      {sessionCount > 0 && (
+        <div className="w-full max-w-md px-6 pb-4">
           <div className="rounded-2xl bg-secondary p-4">
             <p className="text-xs font-body font-medium text-muted-foreground">Today's Sessions</p>
             <p className="mt-1 text-2xl font-display font-bold">{sessionCount}</p>
           </div>
-          <div className="rounded-2xl bg-secondary p-4">
-            <p className="text-xs font-body font-medium text-muted-foreground">Alignment Score</p>
-            <p className="mt-1 text-2xl font-display font-bold">
-              {alignmentScore !== null ? `${alignmentScore}%` : "—"}
-            </p>
-          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-1 flex-col items-center justify-end px-6 pb-36">
         <p className="mb-8 text-center font-body text-sm text-muted-foreground leading-relaxed max-w-[240px]">

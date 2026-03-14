@@ -9,6 +9,8 @@ import { BottomTabBar } from "@/components/BottomTabBar";
 import HomePage from "./pages/HomePage";
 import SOSModePage from "./pages/SOSModePage";
 import ProfilePage from "./pages/ProfilePage";
+import ChildDetailPage from "./pages/ChildDetailPage";
+import HistoryPage from "./pages/HistoryPage";
 import DebriefPage from "./pages/DebriefPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="/sos" element={<ProtectedRoute><SOSModePage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/profile/:childId" element={<ProtectedRoute><ChildDetailPage /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
             <Route path="/debrief" element={<ProtectedRoute><DebriefPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
