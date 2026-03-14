@@ -38,7 +38,8 @@ export function useIncidentsByDateRange(startDate: Date, endDate?: Date) {
         .select(`
           *,
           incident_suggestions(*),
-          incident_feedback(*)
+          incident_feedback(*),
+          child_profiles(display_name)
         `)
         .gte("created_at", startDate.toISOString())
         .order("created_at", { ascending: false });

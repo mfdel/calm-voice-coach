@@ -151,6 +151,9 @@ export default function DebriefPage() {
                   >
                     <div>
                       <p className="font-display text-sm font-bold">{catLabel}</p>
+                      {inc.child_profiles?.display_name && (
+                        <p className="font-body text-xs text-muted-foreground">{inc.child_profiles.display_name}</p>
+                      )}
                       <p className="font-body text-xs text-muted-foreground">{format(new Date(inc.created_at), "h:mm a")}</p>
                     </div>
                     <div className="flex items-center gap-2">

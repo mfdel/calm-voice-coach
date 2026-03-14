@@ -121,24 +121,6 @@ export default function ChildDetailPage() {
             </div>
           </div>
 
-          {/* Calming Preferences */}
-          <div>
-            <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Calming Preferences</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {CALMING_OPTIONS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => toggleItem(calming, c, setCalming)}
-                  className={`rounded-full px-3 py-2 font-body text-xs font-medium transition-colors ${
-                    calming.includes(c) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Development Notes */}
           <div>
             <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Development Notes</label>
