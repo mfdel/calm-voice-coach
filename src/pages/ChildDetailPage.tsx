@@ -13,6 +13,7 @@ export default function ChildDetailPage() {
   const { toast } = useToast();
   const { data: child, isLoading } = useSingleChildProfile(childId);
   const updateChild = useUpdateChild();
+  const { data: insightData, isLoading: insightLoading, error: insightError, refetch: refetchInsight } = useChildHistorySummary(childId);
 
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState("toddler");
