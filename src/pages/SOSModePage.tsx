@@ -343,8 +343,8 @@ export default function SOSModePage() {
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col px-6 pt-6">
-          <p className="rounded-full bg-sos-muted px-4 py-1.5 self-start font-body text-sm text-sos-fg/70 mb-4">
+        <div className="flex-1 flex-col px-6 pt-[50px] flex items-center justify-end">
+          <p className="rounded-full bg-sos-muted py-1.5 self-start font-body text-sm text-sos-fg/70 mb-4 px-[30px] mx-0">
             {catLabel}
           </p>
           <h2 className="font-display text-xl font-extrabold text-sos-fg mb-2">Any quick details?</h2>
