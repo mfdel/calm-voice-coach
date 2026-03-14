@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useSingleChildProfile, useUpdateChild } from "@/hooks/useProfile";
+import { useChildHistorySummary } from "@/hooks/useIncidents";
 import { AGE_GROUPS, TRIGGER_OPTIONS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-
-const CALMING_OPTIONS = [
-  "Deep breaths", "Counting", "Hugs", "Quiet space", "Music",
-  "Fidget toy", "Drawing", "Walking", "Reading", "Rocking",
-];
+import { format } from "date-fns";
 
 export default function ChildDetailPage() {
   const { childId } = useParams<{ childId: string }>();
@@ -16,11 +13,11 @@ export default function ChildDetailPage() {
   const { toast } = useToast();
   const { data: child, isLoading } = useSingleChildProfile(childId);
   const updateChild = useUpdateChild();
+  const { data: insightData, isLoading: insightLoading, error: insightError, refetch: refetchInsight } = useChildHistorySummary(childId);
 
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState("toddler");
   const [triggers, setTriggers] = useState<string[]>([]);
-  const [calming, setCalming] = useState<string[]>([]);
   const [devNotes, setDevNotes] = useState("");
   const [dirty, setDirty] = useState(false);
 
@@ -29,7 +26,6 @@ export default function ChildDetailPage() {
       setName(child.display_name);
       setAgeGroup(child.age_group);
       setTriggers((child.known_triggers as string[]) || []);
-      setCalming((child.calming_preferences as string[]) || []);
       setDevNotes(child.development_notes || "");
     }
   }, [child]);
@@ -46,7 +42,6 @@ export default function ChildDetailPage() {
       display_name: name,
       age_group: ageGroup,
       known_triggers: triggers,
-      calming_preferences: calming,
       development_notes: devNotes || undefined,
     });
     setDirty(false);
@@ -129,24 +124,6 @@ export default function ChildDetailPage() {
             </div>
           </div>
 
-          {/* Calming Preferences */}
-          <div>
-            <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Calming Preferences</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {CALMING_OPTIONS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => toggleItem(calming, c, setCalming)}
-                  className={`rounded-full px-3 py-2 font-body text-xs font-medium transition-colors ${
-                    calming.includes(c) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Development Notes */}
           <div>
             <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">Development Notes</label>
@@ -158,6 +135,45 @@ export default function ChildDetailPage() {
               className="mt-2 w-full rounded-xl bg-secondary p-4 font-body text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none"
               style={{ fontSize: '16px' }}
             />
+          </div>
+
+          {/* 30-Day Insights */}
+          <div>
+            <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wider">30-Day Insights</label>
+            <div className="mt-2 rounded-xl bg-secondary p-4">
+              {insightLoading ? (
+                <div className="flex items-center gap-2 justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <p className="font-body text-sm text-muted-foreground">Generating insights…</p>
+                </div>
+              ) : insightError ? (
+                <button onClick={() => refetchInsight()} className="w-full py-4 text-center">
+                  <p className="font-body text-sm text-muted-foreground">Could not load insights. Tap to retry.</p>
+                </button>
+              ) : insightData ? (
+                <div className="space-y-3">
+                  <p className="font-body text-sm text-foreground whitespace-pre-wrap leading-relaxed">{insightData.summary_text}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-body text-xs text-muted-foreground">
+                      Last generated: {format(new Date(insightData.generated_at), "MMM d, h:mm a")}
+                    </p>
+                    <button
+                      onClick={() => refetchInsight()}
+                      className="flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 font-body text-xs font-medium text-accent-foreground active:scale-95 transition-transform"
+                    >
+                      <RefreshCw className="h-3 w-3" /> Refresh
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => refetchInsight()}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-body text-sm font-medium text-accent-foreground active:scale-95 transition-transform"
+                >
+                  <Sparkles className="h-4 w-4" /> Generate Insights
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Save */}
