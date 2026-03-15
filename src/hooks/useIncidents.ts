@@ -140,6 +140,13 @@ export function useSubmitFeedback() {
         .select()
         .single();
       if (error) throw error;
+
+      // Fire-and-forget: push parent rating to LangSmith via edge function
+      // The API key stays server-side; this just passes the outcome.
+      supabase.functions.invoke("langsmith-feedback", {
+        body: { incident_id, outcome, reason_tags: reason_tags || [] },
+      }).catch(() => {}); // never block the UI on this
+
       return data;
     },
     onSuccess: () => {

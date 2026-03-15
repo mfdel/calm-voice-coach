@@ -27,3 +27,7 @@ ios/App/App.xcworkspace/xcuserdata
 *.njsproj
 *.sln
 *.sw?
+
+# Python secrets
+scripts/**/.env
+*.env

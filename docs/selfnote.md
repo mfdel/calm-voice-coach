@@ -3,3 +3,4 @@
 
 - do research for common problems and the suggestions.
 
+npx supabase secrets set LANGSMITH_API_KEY=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
