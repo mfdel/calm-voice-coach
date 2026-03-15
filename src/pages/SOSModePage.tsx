@@ -424,8 +424,6 @@ export default function SOSModePage() {
   // ─── Result — PRD format: summary → actions with ONE prominent script ───
   if (step === "result" && response) {
     const suggestions = response.suggestions || [];
-    // Best script = first suggestion's script
-    const bestScript = suggestions[0]?.script;
 
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-sos-bg safe-top safe-bottom overflow-auto">
@@ -439,40 +437,32 @@ export default function SOSModePage() {
           <button
             onClick={handleExit}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-sos-muted text-sos-fg/80">
-            
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="flex flex-1 flex-col px-6 pt-6 pb-8 space-y-6">
-          {/* Action cards */}
-          <div className="space-y-3">
+          {/* Per-tip cards: title → explanation → say this */}
+          <div className="space-y-4">
             {suggestions.map((s, i) =>
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-              className="rounded-2xl bg-sos-muted p-4">
+              className="rounded-2xl bg-sos-muted p-4 space-y-3">
               
                 <p className="font-display font-bold text-sos-fg text-2xl shadow-sm bg-inherit">{s.title}</p>
-                <p className="font-body text-xs text-sos-fg/50 mt-1">{s.reason}</p>
+                <p className="font-body text-xs text-sos-fg/50">{s.reason}</p>
+                {s.script &&
+                <div className="rounded-2xl bg-sos-accent/10 border border-sos-accent/20 p-4 mt-2">
+                  <p className="font-body font-semibold uppercase tracking-widest mb-2 text-xs text-indigo-300">Say this</p>
+                  <p className="font-display text-lg font-bold text-sos-fg leading-relaxed">"{s.script}"</p>
+                </div>
+                }
               </motion.div>
             )}
           </div>
-
-          {/* Prominent script — SAY THIS */}
-          {bestScript &&
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="rounded-3xl bg-sos-accent/10 border border-sos-accent/20 p-6">
-            
-              <p className="font-body font-semibold uppercase tracking-widest mb-3 text-sm text-indigo-300">Say this</p>
-              <p className="font-display text-2xl font-bold text-sos-fg leading-relaxed">"{bestScript}"</p>
-            </motion.div>
-          }
 
           {/* Summary */}
           <motion.p
