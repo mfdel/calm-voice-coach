@@ -3,4 +3,10 @@
 
 - do research for common problems and the suggestions.
 
-npx supabase secrets set LANGSMITH_API_KEY=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
+- debrief: once feedback is sent, do something to show confirmation of the action, maybe collapse the details?
+
+- AI summary: too generic, focuses on single incidents, fake welcome message to parent not needed, remove the refresh button if the summary generated that day. 
+
+- remove the history page. there is no use. the debrief page already show the recent history
+
+- remove the voice support for now. the V1 should be 100% text based

@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const groups = [...new Set(settingsItems.map((i) => i.group))];
 
   return (
-    <div className="min-h-screen bg-background safe-top pb-28">
+    <div className="min-h-screen bg-background safe-top pb-28 overflow-y-auto">
       <div className="mx-auto max-w-md px-6 pt-8">
         <h1 className="text-2xl font-extrabold tracking-tight">Settings</h1>
 

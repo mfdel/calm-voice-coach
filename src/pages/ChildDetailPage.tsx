@@ -63,7 +63,7 @@ export default function ChildDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background safe-top pb-28">
+    <div className="min-h-screen bg-background safe-top pb-28 overflow-y-auto">
       <div className="mx-auto max-w-md px-6 pt-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

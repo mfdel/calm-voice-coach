@@ -86,7 +86,7 @@ export default function DebriefPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-top pb-28">
+    <div className="min-h-screen bg-background safe-top pb-28 overflow-y-auto">
       <div className="mx-auto max-w-md px-6 pt-8">
         <div className="flex items-center gap-3">
           <Moon className="h-5 w-5 text-muted-foreground" />

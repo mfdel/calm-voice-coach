@@ -12,7 +12,7 @@ export default function HomePage() {
   const sessionCount = incidents?.length || 0;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-background safe-top">
+    <div className="flex min-h-screen flex-col items-center bg-background safe-top overflow-y-auto">
       <header className="w-full max-w-md px-6 pt-8 pb-2">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">

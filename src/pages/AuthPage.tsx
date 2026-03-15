@@ -45,7 +45,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 safe-top safe-bottom">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 safe-top safe-bottom overflow-y-auto">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-3 mb-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">

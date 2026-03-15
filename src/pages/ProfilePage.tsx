@@ -35,7 +35,7 @@ export default function ProfilePage() {
   const activeRedLineCodes = redLines?.map((r: any) => r.code) || [];
 
   return (
-    <div className="min-h-screen bg-background safe-top pb-28">
+    <div className="min-h-screen bg-background safe-top pb-28 overflow-y-auto">
       <div className="mx-auto max-w-md px-6 pt-8">
         <h1 className="text-2xl font-extrabold tracking-tight">Profile</h1>
         <p className="mt-1 font-body text-sm text-muted-foreground">
