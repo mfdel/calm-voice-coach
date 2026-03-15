@@ -395,6 +395,7 @@ export type Database = {
           id: string
           incident_id: string
           input_token_estimate: number | null
+          langsmith_run_id: string | null
           model_name: string | null
           output_token_count: number | null
           prompt_version: string | null
@@ -407,6 +408,7 @@ export type Database = {
           id?: string
           incident_id: string
           input_token_estimate?: number | null
+          langsmith_run_id?: string | null
           model_name?: string | null
           output_token_count?: number | null
           prompt_version?: string | null
@@ -419,6 +421,7 @@ export type Database = {
           id?: string
           incident_id?: string
           input_token_estimate?: number | null
+          langsmith_run_id?: string | null
           model_name?: string | null
           output_token_count?: number | null
           prompt_version?: string | null
