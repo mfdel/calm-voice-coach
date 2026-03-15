@@ -149,6 +149,23 @@ Write a narrative summary of 3–5 paragraphs covering:
 3. Advice marked "misaligned" and what the reason tags suggest about fit.
 4. 2–3 actionable, style-aligned suggestions for the coming weeks (must fit a ${parentingStyle} parenting approach).`;
 
+    // ── LangSmith: open trace run (fire-and-forget) ──
+    const LANGSMITH_API_KEY = Deno.env.get("LANGSMITH_API_KEY");
+    const langsmithRunId = crypto.randomUUID();
+    if (LANGSMITH_API_KEY) {
+      fetch("https://api.smith.langchain.com/runs", {
+        method: "POST",
+        headers: { "x-api-key": LANGSMITH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: langsmithRunId,
+          name: "child-history-summary",
+          run_type: "chain",
+          inputs: { child_id, age_group: child.age_group, session_count: incidents.length },
+          start_time: new Date().toISOString(),
+        }),
+      }).catch((err) => console.warn("LangSmith open error:", err));
+    }
+
     // Call Gemini via Lovable Gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -173,6 +190,18 @@ Write a narrative summary of 3–5 paragraphs covering:
 
     const aiData = await aiResponse.json();
     const summaryText = aiData.choices?.[0]?.message?.content || "Could not generate summary.";
+
+    // ── LangSmith: close trace run with outputs (fire-and-forget) ──
+    if (LANGSMITH_API_KEY) {
+      fetch(`https://api.smith.langchain.com/runs/${langsmithRunId}`, {
+        method: "PATCH",
+        headers: { "x-api-key": LANGSMITH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outputs: { summary_length: summaryText.length, session_count: incidents.length },
+          end_time: new Date().toISOString(),
+        }),
+      }).catch((err) => console.warn("LangSmith patch error:", err));
+    }
 
     // Persist to cache
     const { data: saved } = await supabase

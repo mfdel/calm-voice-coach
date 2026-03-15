@@ -215,6 +215,23 @@ ${priorLearnings.join("\n")}
 
     const userMessage = sections.join("\n\n");
 
+    // ── LangSmith: open trace run (fire-and-forget) ──
+    const LANGSMITH_API_KEY = Deno.env.get("LANGSMITH_API_KEY");
+    const langsmithRunId = crypto.randomUUID();
+    if (LANGSMITH_API_KEY) {
+      fetch("https://api.smith.langchain.com/runs", {
+        method: "POST",
+        headers: { "x-api-key": LANGSMITH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: langsmithRunId,
+          name: "sos-respond",
+          run_type: "chain",
+          inputs: { problem_category, note_text, age_group: ageGroup },
+          start_time: new Date().toISOString(),
+        }),
+      }).catch((err) => console.warn("LangSmith open error:", err));
+    }
+
     // ═══════════════════════════════════════════════════════════
     // STEP 4: CALL LLM (with tool calling for structured output)
     // ═══════════════════════════════════════════════════════════
@@ -334,6 +351,24 @@ ${priorLearnings.join("\n")}
 
     const latencyMs = Date.now() - startTime;
 
+    // ── LangSmith: close trace run with outputs (fire-and-forget) ──
+    if (LANGSMITH_API_KEY) {
+      fetch(`https://api.smith.langchain.com/runs/${langsmithRunId}`, {
+        method: "PATCH",
+        headers: { "x-api-key": LANGSMITH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outputs: {
+            summary: parsed.summary,
+            suggestions: parsed.suggestions,
+            used_fallback: usedFallback,
+            red_line_violation: redLineViolation,
+          },
+          end_time: new Date().toISOString(),
+          ...(redLineViolation ? { error: "Red-line violation detected \u2014 fallback used" } : {}),
+        }),
+      }).catch((err) => console.warn("LangSmith patch error:", err));
+    }
+
     // ═══════════════════════════════════════════════════════════
     // STEP 6: PERSIST INCIDENT + OBSERVABILITY DATA
     // ═══════════════════════════════════════════════════════════
@@ -387,6 +422,7 @@ ${priorLearnings.join("\n")}
         response_valid: responseValid,
         retry_count: retryCount,
         red_line_violation_detected: redLineViolation,
+        langsmith_run_id: LANGSMITH_API_KEY ? langsmithRunId : null,
       });
     }
 
