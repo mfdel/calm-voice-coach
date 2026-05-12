@@ -122,7 +122,7 @@ These are the most important rules in the entire system:
 ```
 
 ## Target Output
-- **Length**: 5000-7000 words
-- **Sections**: 8-15 (introduction, body sections, conclusion)
+- **Length**: 3000-5000 words
+- **Sections**: 4-9 (introduction, 3-7 body sections, conclusion)
 - **Papers cited**: 40-100 (typically)
 - **Tone**: Analytical academic prose — no paper-by-paper summaries
