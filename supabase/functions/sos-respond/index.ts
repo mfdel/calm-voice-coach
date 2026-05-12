@@ -425,7 +425,7 @@ ${priorLearnings.join("\n")}
           script: s.script,
           source_type: usedFallback ? "fallback" : "llm",
         }));
-        await supabase.from("incident_suggestions").insert(sugRows);
+        await supabaseAdmin.from("incident_suggestions").insert(sugRows);
       }
 
       // Save retrieval event
