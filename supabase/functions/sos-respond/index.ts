@@ -429,7 +429,7 @@ ${priorLearnings.join("\n")}
       }
 
       // Save retrieval event
-      await supabase.from("retrieval_events").insert({
+      await supabaseAdmin.from("retrieval_events").insert({
         incident_id: incident.id,
         query_text: `${problem_category} | ${note_text || ""}`.substring(0, 500),
         query_filters: { problem_category, age_group: ageGroup, triggers: childTriggers, red_lines: redLines },
