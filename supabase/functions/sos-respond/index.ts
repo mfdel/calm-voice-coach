@@ -438,7 +438,7 @@ ${priorLearnings.join("\n")}
       });
 
       // Save prompt run metadata
-      await supabase.from("prompt_runs").insert({
+      await supabaseAdmin.from("prompt_runs").insert({
         incident_id: incident.id,
         prompt_version: "v1",
         model_name: "google/gemini-3-flash-preview",
