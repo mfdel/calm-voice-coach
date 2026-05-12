@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
 import SOSModePage from "./pages/SOSModePage";
 import ProfilePage from "./pages/ProfilePage";
 import ChildDetailPage from "./pages/ChildDetailPage";
@@ -26,6 +27,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/welcome" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="/sos" element={<ProtectedRoute><SOSModePage /></ProtectedRoute>} />
