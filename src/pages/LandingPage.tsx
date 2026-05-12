@@ -8,7 +8,7 @@ export default function LandingPage() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) navigate("/home", { replace: true });
+    if (!loading && user) navigate("/", { replace: true });
   }, [user, loading, navigate]);
 
   return (
