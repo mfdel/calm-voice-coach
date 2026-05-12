@@ -69,7 +69,29 @@ serve(async (req) => {
       });
     }
 
-    const { problem_category, note_text, child_snapshot, parenting_snapshot, child_id } = await req.json();
+    const body = await req.json();
+    let { problem_category, note_text } = body;
+    const { child_snapshot, parenting_snapshot, child_id } = body;
+
+    // ── Server-side input validation ──
+    const VALID_CATEGORIES = new Set([
+      "bedtime_resistance", "meal_refusal", "morning_routine", "sibling_conflict",
+      "transition_meltdown", "dressing_refusal", "public_tantrum", "screen_time_battle",
+      "homework_resistance", "bath_time_refusal", "sharing_conflict", "separation_anxiety",
+      "hitting_aggression", "whining_crying", "cleanup_refusal", "other",
+    ]);
+    if (typeof problem_category !== "string" || !VALID_CATEGORIES.has(problem_category)) {
+      return new Response(JSON.stringify({ error: "Invalid problem_category" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (note_text != null && typeof note_text !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid note_text" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    note_text = (note_text || "").slice(0, 500).replace(/[\r\n]{3,}/g, "\n\n");
+
     const startTime = Date.now();
     const redLines: string[] = parenting_snapshot?.red_lines || [];
     const childTriggers: string[] = (child_snapshot?.known_triggers || []).map((t: string) => t.toLowerCase());
