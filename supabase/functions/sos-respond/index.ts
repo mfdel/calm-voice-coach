@@ -58,9 +58,12 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader! } },
     });
+    // Service-role client for system-only inserts (incident_suggestions, prompt_runs, retrieval_events)
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
