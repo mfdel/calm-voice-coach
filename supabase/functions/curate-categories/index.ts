@@ -89,10 +89,11 @@ serve(async (req) => {
 
     let query = supabase
       .from("child_profiles")
-      .select("id, user_id, known_triggers, age_group");
+      .select("id, user_id, known_triggers, age_group")
+      .eq("user_id", targetUserId); // ALWAYS scope to authenticated user
 
-    if (targetUserId && targetChildId) {
-      query = query.eq("user_id", targetUserId).eq("id", targetChildId);
+    if (targetChildId) {
+      query = query.eq("id", targetChildId);
     }
 
     const { data: children } = await query;
