@@ -13,10 +13,6 @@ dist-ssr
 *.local
 reviews
 
-# Capacitor iOS — exclude only CocoaPods cache and personal Xcode settings
-ios/App/Pods
-ios/App/App.xcworkspace/xcuserdata
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
