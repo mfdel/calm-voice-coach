@@ -351,7 +351,7 @@ export default function SOSModePage() {
           <h2 className="font-display text-xl font-extrabold text-sos-fg mb-2">Any quick details?</h2>
           <p className="font-body text-sm text-sos-fg/50 mb-6">Optional — type or use voice</p>
 
-          <div className="relative">
+          <div className="relative w-full">
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
