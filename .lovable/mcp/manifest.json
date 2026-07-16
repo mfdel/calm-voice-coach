@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "sdk_version": "0.22.2",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://gymzdcweqkqbibeihdsn.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "parentpilot-mcp",
+      "version": "0.1.0",
+      "title": "ParentPilot"
+    },
+    "tools": [
+      {
+        "name": "list_children",
+        "title": "List children",
+        "description": "List the signed-in parent's child profiles (name, age group, triggers, calming preferences).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_incidents",
+        "title": "List recent incidents",
+        "description": "List recent SOS incidents for the signed-in parent, optionally filtered by child or problem category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "child_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter to a specific child. Pass null for all children."
+            },
+            "problem_category": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Filter to a specific problem category (e.g. bedtime_resistance). Pass null for all."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Maximum incidents to return (1-50)."
+            }
+          },
+          "required": [
+            "child_id",
+            "problem_category",
+            "limit"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_incident",
+        "title": "Get incident details",
+        "description": "Fetch a single incident with its coaching suggestions and any parent feedback.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "incident_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The incident's UUID."
+            }
+          },
+          "required": [
+            "incident_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
