@@ -31,7 +31,7 @@ export default function LandingPage() {
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight">ParentPilot</h1>
+              <h1 className="text-lg font-extrabold tracking-tight">Parent Pilot</h1>
               <p className="text-[11px] font-body text-muted-foreground">Your calm in the storm</p>
             </div>
           </div>
